@@ -1,0 +1,14 @@
+input-pad (0.1.2-1) unstable; urgency=low
+
+  [ Asias He ]
+  * New upstream release.
+  * debian/control:  
+    - updated Depends for libinput-pad0 and lininput-pad-xtest
+
+ -- LI Daobing <lidaobing@debian.org>  Sat, 25 Sep 2010 20:46:56 +0800
+
+input-pad (0.1.1-1) unstable; urgency=low
+
+  * Initial release (Closes: #593949)
+
+ -- Asias He <asias.hejun@gmail.com>  Mon, 23 Aug 2010 12:20:21 +0800
