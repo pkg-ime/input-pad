@@ -1,0 +1,183 @@
+%{!?have_python_devel: %define have_python_devel %(rpm -q --quiet python-devel && echo 1 || echo 0)}
+%{!?have_xtest_devel:  %define have_xtest_devel  %(rpm -q --quiet libXtst-devel && echo 1 || echo 0)}
+%{!?have_eek_devel:    %define have_eek_devel    %(rpm -q --quiet eekboard-devel && echo 1 || echo 0)}
+
+%if %have_python_devel
+  %if ! (0%{?fedora} > 12 || 0%{?rhel} > 5)
+  %{!?python_sitearch: %define python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
+  %endif
+%endif
+
+%define sub_version             @libinput_pad_VERSION@
+%define libxklavier_version     4.0
+%define libxml2_version         2.0
+
+%define libinput_paddir %{_libdir}/%{name}-%sub_version
+%define moduledir       %{_libdir}/%{name}-%sub_version/modules
+%define kbduidir        %{_libdir}/%{name}-%sub_version/modules/kbdui
+%define xkeysenddir     %{_libdir}/%{name}-%sub_version/modules/xkeysend
+
+
+Name:       @PACKAGE_NAME@
+Version:    @PACKAGE_VERSION@
+Release:    1%{?dist}
+Summary:    On-screen Input Pad to Send Characters with Mouse
+License:    LGPLv2+
+Group:      System Environment/Libraries
+URL:        http://code.google.com/p/input-pad/
+Source0:    http://input-pad.googlecode.com/files/%{name}-%{version}.tar.gz
+
+BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+
+BuildRequires:  gettext-devel
+BuildRequires:  gtk2-devel
+BuildRequires:  libtool
+BuildRequires:  libxkbfile-devel
+BuildRequires:  libxklavier-devel       >= %libxklavier_version
+BuildRequires:  libxml2-devel           >= %libxml2_version
+BuildRequires:  intltool
+BuildRequires:  pkgconfig
+%if %have_xtest_devel
+BuildRequires:  libXtst-devel
+%endif
+%if %have_python_devel
+BuildRequires:  python2-devel
+BuildRequires:  swig
+%endif
+%if %have_eek_devel
+BuildRequires:  eekboard-devel
+%endif
+
+%description
+The input pad is a tool to send a character on button to text applications.
+
+%package devel
+Summary:    Development tools for input-pad
+Group:      Development/Libraries
+Requires:   %{name} = %{version}-%{release}
+
+%description devel
+The input-pad-devel package contains the header files.
+
+%if %have_python_devel
+%package python
+Summary:    Input Pad for python
+Group:      System Environment/Libraries
+Requires:   %{name} = %{version}-%{release}
+
+%description python
+The input-pad-python package contains the python wrapper files.
+%endif
+
+%if %have_xtest_devel
+%package xtest
+Summary:    Input Pad with XTEST extension
+Group:      System Environment/Libraries
+Requires:   %{name} = %{version}-%{release}
+
+%description xtest
+The input-pad-xtest package contains XTEST extension module
+%endif
+
+%if %have_eek_devel
+%package eek
+Summary:    Input Pad with eekboard extension
+Group:      System Environment/Libraries
+Requires:   %{name} = %{version}-%{release}
+
+%description eek
+The input-pad-eek package contains eekboard extension module
+%endif
+
+%prep
+%setup -q
+
+%build
+%configure \
+%if ! %have_python_devel
+    --disable-python            \
+%endif
+%if %have_eek_devel
+    --enable-eek                \
+%endif
+%if %have_xtest_devel
+    --enable-xtest              \
+%endif
+    --disable-static
+make %{?_smp_mflags}
+
+%install
+rm -rf $RPM_BUILD_ROOT
+make install DESTDIR=$RPM_BUILD_ROOT INSTALL='install -p'
+
+if [ ! -d $RPM_BUILD_ROOT%kbduidir ] ; then
+    mkdir -p $RPM_BUILD_ROOT%kbduidir
+fi
+if [ ! -d $RPM_BUILD_ROOT%xkeysenddir ] ; then
+    mkdir -p $RPM_BUILD_ROOT%xkeysenddir
+fi
+
+rm -f $RPM_BUILD_ROOT%{_libdir}/*.la
+rm -f $RPM_BUILD_ROOT%{_libdir}/*.a
+%if %have_xtest_devel
+rm -f $RPM_BUILD_ROOT%xkeysenddir/*.la
+rm -f $RPM_BUILD_ROOT%xkeysenddir/*.a
+%endif
+%if %have_eek_devel
+rm -f $RPM_BUILD_ROOT%kbduidir/*.la
+rm -f $RPM_BUILD_ROOT%kbduidir/*.a
+%endif
+%if %have_python_devel
+rm -f $RPM_BUILD_ROOT%python_sitearch/%{name}-%sub_version/*.la
+rm -f $RPM_BUILD_ROOT%python_sitearch/%{name}-%sub_version/*.a
+%endif
+
+%find_lang %{name}
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%post -p /sbin/ldconfig
+
+%postun -p /sbin/ldconfig
+
+%files -f %{name}.lang
+%defattr(-,root,root,-)
+%doc AUTHORS COPYING README
+%{_bindir}/input-pad
+%dir %libinput_paddir
+%dir %moduledir
+%dir %xkeysenddir
+%dir %kbduidir
+%{_libdir}/libinput-pad.so.*
+%{_datadir}/%name
+%{_datadir}/pixmaps/input-pad.png
+
+%files devel
+%defattr(-,root,root,-)
+%{_includedir}/%{name}-%sub_version
+%{_libdir}/libinput-pad.so
+%{_libdir}/pkgconfig/*.pc
+
+%if %have_python_devel
+%files python
+%defattr(-,root,root,-)
+%python_sitearch/%{name}-%sub_version
+%python_sitearch/pyinput_pad.pth
+%endif
+
+%if %have_xtest_devel
+%files xtest
+%defattr(-,root,root,-)
+%xkeysenddir/libinput-pad-xtest-gdk.so
+%endif
+
+%if %have_eek_devel
+%files eek
+%defattr(-,root,root,-)
+%kbduidir/libinput-pad-eek-gtk.so
+%endif
+
+%changelog
+* @DATE_DISPLAY@ Takao Fujiwara <takao.fujiwara1@gmail.com> - @PACKAGE_VERSION@-1
+- Current version.

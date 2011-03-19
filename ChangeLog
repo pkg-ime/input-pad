@@ -1,0 +1,645 @@
+commit c4bc6e733343761938a9f5cd10455ca8bbe31fc8
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-09-07 11:54:32 +0900
+
+    Released 0.1.2
+
+M	configure.ac
+
+commit b6fa11c6d4600da36535eabd50acdc5213130666
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-09-07 11:48:26 +0900
+
+    Added some acronyms.
+
+M	data/str.xml.in
+M	input-pad/window-gtk.c
+M	po/fr.po
+M	po/ja.po
+
+commit 15146b3af656e7168a024a03ada5440dc259ac52
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-08-30 16:08:21 +0900
+
+    Fixed the default selection in GtkTreeView.
+
+M	input-pad/window-gtk.c
+
+commit ed250b079e0a64a4780b821a37f285e5c35f866e
+Author: Daiki Ueno <ueno@unixuser.org>
+Date:   2010-08-30 16:07:22 +0900
+
+    Don't load kbdui/foo.so in addition to kbdui/foo.la.
+
+M	input-pad/window-gtk.c
+
+commit 6f968e82e1d513f1f672b0785c7ee1a2d075f528
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-07-16 10:49:16 +0900
+
+    Added debian build.
+
+A	debian/README.source
+A	debian/README.source.eek-only
+A	debian/changelog
+A	debian/changelog.eek-only
+A	debian/compat
+A	debian/control
+A	debian/control.eek
+A	debian/control.eek-only
+A	debian/copyright
+A	debian/docs
+A	debian/input-pad.1
+A	debian/input-pad.install
+A	debian/input-pad.manpages
+A	debian/libinput-pad-dev.install
+A	debian/libinput-pad-dev.install.eek
+A	debian/libinput-pad-eek-dev.install.eek-only
+A	debian/libinput-pad-eek.install.eek
+A	debian/libinput-pad-eek.install.eek-only
+A	debian/libinput-pad-xtest.install
+A	debian/libinput-pad-xtest.symbols
+A	debian/libinput-pad0.dirs
+A	debian/libinput-pad0.install
+A	debian/libinput-pad0.symbols
+A	debian/python-input-pad.install
+A	debian/rules
+A	debian/rules.eek
+A	debian/rules.eek-only
+A	debian/source/format
+A	debian/substvars
+A	debian/watch
+
+commit cc2cfa6585b87be2cf842c6feec6b700cc966ed6
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-07-16 10:47:49 +0900
+
+    Fixed #1 input-pad.pc doesn't include gtk+-2.0
+
+M	data/input-pad.ui
+M	input-pad.pc.in
+M	input-pad/window-gtk.c
+M	po/fr.po
+M	po/ja.po
+
+commit 88e53fc71bcab988c6474f7079668826944eeb82
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-07-08 18:59:18 +0900
+
+    Released 0.1.1
+
+M	configure.ac
+M	input-pad.pc.in
+
+commit c48bd95125b6b55264516140ed7633154e10610d
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-07-08 12:04:00 +0900
+
+    Add private kbdui_name for window instances and global module tables.
+
+M	input-pad/window-gtk.c
+
+commit d1600c2185b0a374eccfa2c637fac23df50c4e70
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-07-02 00:48:21 +0900
+
+    Added acronym table.
+
+M	data/str.xml.in
+M	po/fr.po
+M	po/ja.po
+
+commit e783f8cc624e2a7694595445602dbdf492d2f742
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-06-30 15:34:58 +0900
+
+    Fixed configure option.
+
+M	Makefile.am
+M	configure.ac
+M	input-pad.spec.in
+M	pyinput-pad/test_input_pad.py
+
+commit 54b92cee0d1af1e6dbf981bf0014420b40778732
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-06-29 15:24:37 +0900
+
+    Added input_pad_window_get_kbdui_name_list(),
+    input_pad_window_set_kbdui_name(),
+    input_pad_window_set_show_table(),
+    input_pad_window_set_show_layout()
+
+M	input-pad.pc.in
+M	input-pad/eek-gtk.c
+M	input-pad/input-pad-kbdui-gtk.h
+M	input-pad/input-pad-window-gtk.h
+M	input-pad/input-pad.h
+M	input-pad/kbdui-gtk.c
+M	input-pad/window-gtk.c
+M	po/POTFILES.in
+M	po/fr.po
+M	po/ja.po
+M	pyinput-pad/input_pad.i
+M	pyinput-pad/input_pad_window_gtk.i
+M	pyinput-pad/test_input_pad.py
+M	pyinput-pad/test_input_pad_gtk.py
+
+commit 01cf2a1a4ac44c7795ce09ea44ee6928c0936917
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-06-25 18:19:27 +0900
+
+    Added input_pad_gtk_window_set_keyboard_state_with_keysym() for kbdui modules.
+
+M	input-pad/eek-gtk.c
+M	input-pad/input-pad-window-gtk.h
+M	input-pad/window-gtk.c
+M	pyinput-pad/input_pad_window_gtk.i
+M	pyinput-pad/test_input_pad_gtk.py
+
+commit bb432f92b19993faddc76d2afbcbe447ed389e66
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-06-25 13:08:03 +0900
+
+    Added InputPadGtkKbdui & InputPadGtkKbduiEek to module eek.
+
+M	AUTHORS
+M	configure.ac
+M	data/input-pad.ui
+M	input-pad.spec.in
+M	input-pad/Makefile.am
+A	input-pad/eek-gtk.c
+A	input-pad/eek-gtk.h
+A	input-pad/input-pad-kbdui-gtk.h
+M	input-pad/input-pad-marshal.list
+M	input-pad/input-pad-window-gtk.h
+A	input-pad/kbdui-gtk.c
+M	input-pad/window-gtk.c
+M	po/POTFILES.in
+M	po/fr.po
+M	po/ja.po
+M	pyinput-pad/input_pad.i
+M	pyinput-pad/input_pad_window_gtk.i
+M	pyinput-pad/test_input_pad.py
+M	pyinput-pad/test_input_pad_gtk.py
+
+commit 5e75d3de699e1bb963987f7e18576d0f602eebfc
+Author: Daiki Ueno <ueno@unixuser.org>
+Date:   2010-06-23 12:04:39 +0900
+
+    libeek support, part 2
+
+M	configure.ac
+M	input-pad/Makefile.am
+M	input-pad/window-gtk.c
+
+commit 7b018853242fafb483080f983f13b7dc8b9b6b01
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-06-23 13:23:45 +0900
+
+    Fixed main loop in child thread.
+
+M	input-pad/input-pad-window-gtk.h
+M	input-pad/window-gtk.c
+
+commit 23e8e2ae85321725357d6fac7a3ed467fbabf9e6
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-06-22 14:43:03 +0900
+
+    Changed to quit on close event.
+
+M	input-pad/window-gtk.c
+
+commit 29e8c23715f0e49adc7bcebe73953e99e753e20d
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-06-22 13:42:38 +0900
+
+    Added append_padfile.
+
+M	input-pad/input-pad-window-gtk.h
+M	input-pad/input-pad.h
+M	input-pad/window-gtk.c
+M	pyinput-pad/input_pad.i
+M	pyinput-pad/input_pad_window_gtk.i
+M	pyinput-pad/test_input_pad.py
+M	pyinput-pad/test_input_pad_gtk.py
+
+commit 1d854ccd0d08911462d45d97ad6178a55861045b
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-06-22 12:08:08 +0900
+
+    Redesigned custom table.
+
+M	TODO
+M	data/Makefile.am
+M	data/base.xml.in
+M	data/input-pad.ui
+M	data/str.xml.in
+A	data/w3c.xml.in
+M	input-pad/window-gtk.c
+M	po/POTFILES.in
+M	po/fr.po
+M	po/ja.po
+
+commit 909624bcfda1155d12287eb4c131b85770e1a9a9
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-06-21 12:24:05 +0900
+
+    Added command table.
+
+M	TODO
+M	data/Makefile.am
+A	data/cmd.xml.in
+M	data/str.xml.in
+M	data/w3ctostr.py
+M	input-pad/button-gtk.c
+M	input-pad/input-pad-group.h
+M	input-pad/parse-pad.c
+M	input-pad/window-gtk.c
+
+commit a2c97d482f093ace5ceadb9d5c028cb3f7b3740a
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-06-18 21:58:59 +0900
+
+    Added string table.
+
+M	TODO
+M	data/Makefile.am
+A	data/str.xml.in
+A	data/w3ctostr.py
+M	input-pad/button-gtk.c
+M	input-pad/button-gtk.h
+M	input-pad/input-pad-group.h
+M	input-pad/parse-pad.c
+M	input-pad/window-gtk.c
+M	po/POTFILES.in
+M	po/fr.po
+M	po/ja.po
+
+commit 42828646ff8013b6275090b5f5aa449f1286d7c4
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-06-18 10:39:27 +0900
+
+    Fixed resize and typo.
+
+M	TODO
+M	data/base.xml.in
+M	data/ja.xml.in
+M	input-pad/window-gtk.c
+M	po/fr.po
+M	po/ja.po
+
+commit 57c8391988a60dfc4bf83dadced2244ce046db11
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-06-17 15:17:23 +0900
+
+    Added some symbols in pad.
+
+M	data/Makefile.am
+A	data/base.xml.in
+D	data/group01-base.xml.in
+D	data/group02-ja.xml.in
+D	data/group02-zh.xml.in
+D	data/group90-keyboard.xml.in
+A	data/ja.xml.in
+A	data/keyboard.xml.in
+A	data/zh.xml.in
+M	po/POTFILES.in
+M	po/fr.po
+M	po/ja.po
+
+commit cde571bbd7ce95482c8c4b9dce6ffb9148daafb3
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-06-17 12:07:25 +0900
+
+    Added pressed-repeat signal.
+
+M	TODO
+M	input-pad/button-gtk.c
+M	input-pad/button-gtk.h
+M	input-pad/window-gtk.c
+
+commit 933a066b4a0d71b9ec9a7badc0f171283e8e29f3
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-06-16 17:15:43 +0900
+
+    Added input_pad_window_reorder_button_pressed
+
+M	TODO
+M	input-pad/input-pad-window-gtk.h
+M	input-pad/input-pad.h
+M	input-pad/window-gtk.c
+M	input-pad/xtest-gdk.c
+M	pyinput-pad/input_pad.i
+M	pyinput-pad/input_pad_window_gtk.i
+M	pyinput-pad/test_input_pad.py
+M	pyinput-pad/test_input_pad_gtk.py
+
+commit 5b4562ee1633d8deb1ad4f23f4ea1b887371791b
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-06-16 13:19:07 +0900
+
+    Added color button.
+
+M	input-pad/input-pad-window-gtk.h
+M	input-pad/input-pad.h
+M	input-pad/window-gtk.c
+M	pyinput-pad/input_pad.i
+M	pyinput-pad/input_pad_window_gtk.i
+M	pyinput-pad/test_input_pad.py
+M	pyinput-pad/test_input_pad_gtk.py
+
+commit ce4919a186b0217319ab54eda5132c37b44525a6
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-06-15 19:19:19 +0900
+
+    Added input_pad_gtk_button_new_with_unicode() and input_pad_window_set_paddir()
+
+M	data/input-pad.ui
+M	input-pad/button-gtk.c
+M	input-pad/button-gtk.h
+M	input-pad/i18n.h
+M	input-pad/input-pad-group.h
+M	input-pad/input-pad-marshal.list
+M	input-pad/input-pad-window-gtk.h
+M	input-pad/input-pad.h
+M	input-pad/parse-pad.c
+M	input-pad/window-gtk.c
+M	pyinput-pad/input_pad.i
+M	pyinput-pad/input_pad_group.i
+M	pyinput-pad/input_pad_window_gtk.i
+M	pyinput-pad/test_input_pad.py
+M	pyinput-pad/test_input_pad_group.py
+M	pyinput-pad/test_input_pad_gtk.py
+
+commit 1d47bd66d93ca26e90f26c837218ff77ab18275c
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-06-14 10:48:44 +0900
+
+    Added SpinButton on Code Point dialog.
+
+M	data/input-pad.ui
+M	input-pad/window-gtk.c
+
+commit ad31ec8a46839bf1c7860860edf7769b3e3c02bf
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-06-11 21:21:08 +0900
+
+    Followed Fedora spec policy.
+
+M	input-pad.spec.in
+
+commit 880a63b1c1da3058b4334ed7fc4daec7d094b211
+Merge: 62135bf b5f1e4e
+Author: Daiki Ueno <ueno@unixuser.org>
+Date:   2010-06-09 16:51:51 +0900
+
+    Merge remote branch 'fujiwarat/master'
+
+commit b5f1e4e738c0bb248d9fb59648ec06d87d58e250
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-06-08 17:29:19 +0900
+
+    Followed Fedora spec policy.
+
+M	input-pad.spec.in
+
+commit 791ba5f3d22323e525a4153c7b0da272e9bba951
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-06-08 15:43:29 +0900
+
+    Added .so version info.
+
+M	configure.ac
+M	input-pad.pc.in
+M	input-pad.spec.in
+M	input-pad/Makefile.am
+M	input-pad/geometry-gdk.c
+M	input-pad/input-pad.h
+M	input-pad/window-gtk.c
+M	pyinput-pad/input_pad.i
+M	pyinput-pad/input_pad_window_gtk.i
+M	pyinput-pad/test_input_pad.py
+M	pyinput-pad/test_input_pad_gtk.py
+
+commit 62135bfa240a60822c0a5e24a676ba5e148f1051
+Author: Daiki Ueno <ueno@unixuser.org>
+Date:   2010-06-08 10:03:17 +0900
+
+    Fix rebuild with "make; make clean; make".
+
+M	pyinput-pad/Makefile.am
+
+commit 10605c7c54ecfabdeb1ac2492f213fce3ad1de64
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-06-03 15:45:53 +0900
+
+    Followed Fedora spec policy.
+
+M	input-pad.spec.in
+
+commit 840aeeae7a54acb153a9afe0924aff72e902177b
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-06-03 13:49:47 +0900
+
+    Changed to LGPL.
+
+M	COPYING
+M	Makefile.am
+M	configure.ac
+M	data/Makefile.am
+M	data/char2hexstr.py
+M	data/input-pad.ui
+D	engine/Makefile.am
+D	engine/engine.c
+D	engine/engine.h
+D	engine/input-pad.xml.in
+D	engine/main.c
+M	input-pad.spec.in
+M	input-pad/Makefile.am
+M	input-pad/button-gtk.c
+M	input-pad/button-gtk.h
+M	input-pad/combobox-gtk.c
+M	input-pad/combobox-gtk.h
+M	input-pad/geometry-gdk.c
+M	input-pad/geometry-gdk.h
+M	input-pad/geometry-xkb.h
+M	input-pad/i18n.h
+M	input-pad/input-pad-group.h
+M	input-pad/input-pad-main.c
+M	input-pad/input-pad-private.h
+M	input-pad/input-pad-window-gtk.h
+M	input-pad/input-pad.h
+M	input-pad/keysym-str2val.c
+M	input-pad/parse-pad.c
+M	input-pad/unicode_block.h
+M	input-pad/unicode_block.sh
+M	input-pad/window-gtk.c
+M	input-pad/xtest-gdk.c
+M	po/Makevars
+M	po/fr.po
+M	po/ja.po
+M	pyinput-pad/Makefile.am
+
+commit 4c3b79f98ef2b902c9d332aeb587753c26b2a75a
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-06-03 13:03:39 +0900
+
+    Separated ibus-input-pad from input-pad.
+    
+    http://github.com/fujiwarat/ibus-input-pad
+
+M	Makefile.am
+M	configure.ac
+M	input-pad.spec.in
+M	po/POTFILES.in
+M	po/fr.po
+M	po/ja.po
+
+commit 6f530286998b3b700f2a20a03c1bd52fd209141d
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-06-03 11:53:02 +0900
+
+    Redesigned Pad GUI.
+
+M	TODO
+M	data/group01-base.xml.in
+M	data/input-pad.ui
+M	input-pad/Makefile.am
+M	input-pad/parse-pad.c
+A	input-pad/unicode_block.h
+A	input-pad/unicode_block.sh
+M	input-pad/window-gtk.c
+M	po/POTFILES.in
+M	po/fr.po
+M	po/ja.po
+
+commit c1e6058072998de48062ac6af9fce3049a203313
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-06-02 12:23:53 +0900
+
+    Added keyboard layout chooser dialog.
+
+M	TODO
+M	configure.ac
+M	data/Makefile.am
+M	data/input-pad.ui
+M	input-pad.spec.in
+M	input-pad/Makefile.am
+M	input-pad/combobox-gtk.c
+M	input-pad/geometry-gdk.c
+M	input-pad/geometry-gdk.h
+A	input-pad/geometry-xkb.h
+M	input-pad/parse-pad.c
+M	input-pad/window-gtk.c
+M	po/fr.po
+M	po/ja.po
+
+commit 0665aee8480b994a7614e2fa60a13d2e425e0141
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-05-31 18:31:20 +0900
+
+    Added XKB group.
+
+M	configure.ac
+M	data/Makefile.am
+M	data/input-pad.ui
+M	input-pad.spec.in
+M	input-pad/Makefile.am
+M	input-pad/button-gtk.c
+M	input-pad/button-gtk.h
+M	input-pad/geometry-gdk.c
+M	input-pad/geometry-gdk.h
+M	input-pad/input-pad-window-gtk.h
+M	input-pad/window-gtk.c
+M	po/fr.po
+M	po/ja.po
+
+commit 226f24b081ea89dd71d22f9c5d25cc8a913bbec2
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-05-26 16:34:13 +0900
+
+    Added keyboard layout.
+
+M	TODO
+M	configure.ac
+M	data/input-pad.ui
+M	input-pad.spec.in
+M	input-pad/Makefile.am
+A	input-pad/geometry-gdk.c
+A	input-pad/geometry-gdk.h
+M	input-pad/window-gtk.c
+
+commit 60e64906afd7c1ddf91f1ca37834cf01328a154b
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-05-25 10:15:49 +0900
+
+    Added code point dialog.
+
+M	autogen.sh
+M	data/input-pad.ui
+M	input-pad/Makefile.am
+A	input-pad/combobox-gtk.c
+A	input-pad/combobox-gtk.h
+M	input-pad/input-pad.h
+M	input-pad/window-gtk.c
+M	pyinput-pad/test_input_pad.py
+
+commit 18d9c3517a0836a1139d2f6d205b6a08ebf0fe3b
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-05-13 15:05:07 +0900
+
+    Initial Implementation
+
+A	AUTHORS
+A	COPYING
+A	ChangeLog
+A	Makefile.am
+A	NEWS
+A	README
+A	TODO
+A	autogen.sh
+A	configure.ac
+A	data/Makefile.am
+A	data/char2hexstr.py
+A	data/group01-base.xml.in
+A	data/group02-ja.xml.in
+A	data/group02-zh.xml.in
+A	data/group90-keyboard.xml.in
+A	data/input-pad.desktop.in
+A	data/input-pad.png
+A	data/input-pad.ui
+A	engine/Makefile.am
+A	engine/engine.c
+A	engine/engine.h
+A	engine/input-pad.xml.in
+A	engine/main.c
+A	input-pad.pc.in
+A	input-pad.spec.in
+A	input-pad/Makefile.am
+A	input-pad/button-gtk.c
+A	input-pad/button-gtk.h
+A	input-pad/i18n.h
+A	input-pad/input-pad-group.h
+A	input-pad/input-pad-main.c
+A	input-pad/input-pad-marshal.list
+A	input-pad/input-pad-private.h
+A	input-pad/input-pad-window-gtk.h
+A	input-pad/input-pad.h
+A	input-pad/keysym-str2val.c
+A	input-pad/keysym-str2val.h
+A	input-pad/parse-pad.c
+A	input-pad/window-gtk.c
+A	input-pad/xtest-gdk.c
+A	po/LINGUAS
+A	po/Makevars
+A	po/POTFILES.in
+A	po/fr.po
+A	po/ja.po
+A	pyinput-pad/Makefile.am
+A	pyinput-pad/input_pad.i
+A	pyinput-pad/input_pad_group.i
+A	pyinput-pad/input_pad_window_gtk.i
+A	pyinput-pad/pyinput_pad.pth.in
+A	pyinput-pad/test_input_pad.py
+A	pyinput-pad/test_input_pad_group.py
+A	pyinput-pad/test_input_pad_gtk.py
