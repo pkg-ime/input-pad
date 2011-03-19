@@ -57,6 +57,14 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+@HAVE_GTK3_TRUE@am__append_1 = $(GTK3_CFLAGS)
+@HAVE_GTK3_TRUE@am__append_2 = $(GTK3_LIBS)
+@HAVE_GTK3_FALSE@am__append_3 = $(GTK2_CFLAGS)
+@HAVE_GTK3_FALSE@am__append_4 = $(GTK2_LIBS)
+@HAVE_GTK3_TRUE@am__append_5 = $(GTK3_CFLAGS)
+@HAVE_GTK3_TRUE@am__append_6 = $(GTK3_LIBS)
+@HAVE_GTK3_FALSE@am__append_7 = $(GTK2_CFLAGS)
+@HAVE_GTK3_FALSE@am__append_8 = $(GTK2_LIBS)
 subdir = pyinput-pad
 DIST_COMMON = $(pyinput_pad_PYTHON) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/pyinput_pad.pth.in
@@ -197,6 +205,9 @@ GOBJECT_QUERY = @GOBJECT_QUERY@
 GREP = @GREP@
 GTK2_CFLAGS = @GTK2_CFLAGS@
 GTK2_LIBS = @GTK2_LIBS@
+GTK3_CFLAGS = @GTK3_CFLAGS@
+GTK3_LIBS = @GTK3_LIBS@
+GTK_API_VERSION = @GTK_API_VERSION@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -243,6 +254,8 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
+PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
+PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 POFILES = @POFILES@
 POSUB = @POSUB@
 PO_IN_DATADIR_FALSE = @PO_IN_DATADIR_FALSE@
@@ -307,7 +320,6 @@ libexecdir = @libexecdir@
 libinput_pad_VERSION = @libinput_pad_VERSION@
 localedir = @localedir@
 localstatedir = @localstatedir@
-lt_ECHO = @lt_ECHO@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -359,18 +371,10 @@ nodist__input_pad_la_SOURCES = \
 	input_pad_wrap.c                                        \
 	$(NULL)
 
-_input_pad_la_CFLAGS = \
-	$(PYTHON_CFLAGS)                                        \
-	$(GTK2_CFLAGS)                                          \
-	$(NULL)
-
-_input_pad_la_LDFLAGS = \
-	$(PYTHON_LIBS)                                          \
-	$(GTK2_LIBS)                                            \
-	-avoid-version                                          \
-	-module                                                 \
-	$(NULL)
-
+_input_pad_la_CFLAGS = $(PYTHON_CFLAGS) $(NULL) $(am__append_1) \
+	$(am__append_3)
+_input_pad_la_LDFLAGS = $(PYTHON_LIBS) -avoid-version -module $(NULL) \
+	$(am__append_2) $(am__append_4)
 _input_pad_la_LIBADD = \
 	$(top_builddir)/input-pad/libinput-pad.la               \
 	$(NULL)
@@ -403,18 +407,10 @@ nodist__input_pad_window_gtk_la_SOURCES = \
 	input_pad_window_gtk_wrap.c                             \
 	$(NULL)
 
-_input_pad_window_gtk_la_CFLAGS = \
-	$(PYTHON_CFLAGS)                                        \
-	$(GTK2_CFLAGS)                                          \
-	$(NULL)
-
-_input_pad_window_gtk_la_LDFLAGS = \
-	$(PYTHON_LIBS)                                          \
-	$(GTK2_LIBS)                                            \
-	-avoid-version                                          \
-	-module                                                 \
-	$(NULL)
-
+_input_pad_window_gtk_la_CFLAGS = $(PYTHON_CFLAGS) $(NULL) \
+	$(am__append_5) $(am__append_7)
+_input_pad_window_gtk_la_LDFLAGS = $(PYTHON_LIBS) -avoid-version \
+	-module $(NULL) $(am__append_6) $(am__append_8)
 _input_pad_window_gtk_la_LIBADD = \
 	$(top_builddir)/input-pad/libinput-pad.la               \
 	$(NULL)
