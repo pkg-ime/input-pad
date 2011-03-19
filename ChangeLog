@@ -1,3 +1,45 @@
+commit 54d661f2644d5f7f4d1bb5f93b54fd4763c534a4
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-11-30 17:11:53 +0900
+
+    Released 1.0.0
+
+M	configure.ac
+
+commit 44a4af542b19359ce9585b90e7512a1bb69829a3
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-11-30 17:11:17 +0900
+
+    Changed GTK+ configure option.
+
+M	configure.ac
+M	input-pad.pc.in
+
+commit 1f2f2d335de4d2315b3e2bc77ad89449252e96c3
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-11-11 01:46:02 +0900
+
+    Added some acronyms.
+
+M	data/str.xml.in
+M	po/fr.po
+M	po/ja.po
+
+commit a2c88142005f18359e0571933287edb8ef3d3299
+Author: fujiwarat <takao.fujiwara1@gmail.com>
+Date:   2010-11-09 17:44:47 +0900
+
+    Supported GTK3.
+
+M	configure.ac
+M	input-pad.pc.in
+M	input-pad/Makefile.am
+M	input-pad/button-gtk.c
+M	input-pad/geometry-gdk.c
+M	input-pad/window-gtk.c
+M	input-pad/xtest-gdk.c
+M	pyinput-pad/Makefile.am
+
 commit c4bc6e733343761938a9f5cd10455ca8bbe31fc8
 Author: fujiwarat <takao.fujiwara1@gmail.com>
 Date:   2010-09-07 11:54:32 +0900

@@ -58,12 +58,20 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@HAVE_XTEST_TRUE@am__append_1 = \
+@HAVE_GTK3_TRUE@am__append_1 = $(GTK3_CFLAGS)
+@HAVE_GTK3_TRUE@am__append_2 = $(GTK3_LIBS)
+@HAVE_GTK3_FALSE@am__append_3 = $(GTK2_CFLAGS)
+@HAVE_GTK3_FALSE@am__append_4 = $(GTK2_LIBS)
+@HAVE_XTEST_TRUE@am__append_5 = \
 @HAVE_XTEST_TRUE@	-DMODULE_XTEST_GDK_BASE=\""$(MODULE_XTEST_GDK_BASE)"\"  \
 @HAVE_XTEST_TRUE@	-DMODULE_XTEST_GDK_DIR=\""$(MODULE_XKEYSEND_DIR)"\"     \
 @HAVE_XTEST_TRUE@	$(NULL)
 
-@HAVE_EEK_TRUE@am__append_2 = \
+@HAVE_GTK3_TRUE@@HAVE_XTEST_TRUE@am__append_6 = $(GTK3_CFLAGS)
+@HAVE_GTK3_TRUE@@HAVE_XTEST_TRUE@am__append_7 = $(GTK3_LIBS)
+@HAVE_GTK3_FALSE@@HAVE_XTEST_TRUE@am__append_8 = $(GTK2_CFLAGS)
+@HAVE_GTK3_FALSE@@HAVE_XTEST_TRUE@am__append_9 = $(GTK2_LIBS)
+@HAVE_EEK_TRUE@am__append_10 = \
 @HAVE_EEK_TRUE@	-DMODULE_EEK_GTK_BASE=\""$(MODULE_EEK_GTK_BASE)"\"      \
 @HAVE_EEK_TRUE@	$(NULL)
 
@@ -122,10 +130,14 @@ libinput_pad_eek_gtk_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(libinput_pad_eek_gtk_la_LDFLAGS) $(LDFLAGS) -o $@
 @HAVE_EEK_TRUE@am_libinput_pad_eek_gtk_la_rpath = -rpath \
 @HAVE_EEK_TRUE@	$(libinput_pad_eek_gtkdir)
+@HAVE_GTK3_TRUE@@HAVE_XTEST_TRUE@am__DEPENDENCIES_2 =  \
+@HAVE_GTK3_TRUE@@HAVE_XTEST_TRUE@	$(am__DEPENDENCIES_1)
+@HAVE_GTK3_FALSE@@HAVE_XTEST_TRUE@am__DEPENDENCIES_3 =  \
+@HAVE_GTK3_FALSE@@HAVE_XTEST_TRUE@	$(am__DEPENDENCIES_1)
 @HAVE_XTEST_TRUE@libinput_pad_xtest_gdk_la_DEPENDENCIES =  \
 @HAVE_XTEST_TRUE@	$(builddir)/libinput-pad.la \
 @HAVE_XTEST_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-@HAVE_XTEST_TRUE@	$(am__DEPENDENCIES_1)
+@HAVE_XTEST_TRUE@	$(am__DEPENDENCIES_2) $(am__DEPENDENCIES_3)
 am__libinput_pad_xtest_gdk_la_SOURCES_DIST = xtest-gdk.c
 @HAVE_XTEST_TRUE@am_libinput_pad_xtest_gdk_la_OBJECTS =  \
 @HAVE_XTEST_TRUE@	libinput_pad_xtest_gdk_la-xtest-gdk.lo
@@ -137,9 +149,12 @@ libinput_pad_xtest_gdk_la_LINK = $(LIBTOOL) --tag=CC \
 	$(libinput_pad_xtest_gdk_la_LDFLAGS) $(LDFLAGS) -o $@
 @HAVE_XTEST_TRUE@am_libinput_pad_xtest_gdk_la_rpath = -rpath \
 @HAVE_XTEST_TRUE@	$(libinput_pad_xtest_gdkdir)
+@HAVE_GTK3_TRUE@am__DEPENDENCIES_4 = $(am__DEPENDENCIES_1)
+@HAVE_GTK3_FALSE@am__DEPENDENCIES_5 = $(am__DEPENDENCIES_1)
 libinput_pad_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_4) \
+	$(am__DEPENDENCIES_5)
 am__objects_1 = libinput_pad_la-input-pad-marshal.lo
 am__objects_2 =
 am_libinput_pad_la_OBJECTS = $(am__objects_1) $(am__objects_2) \
@@ -227,6 +242,9 @@ GOBJECT_QUERY = @GOBJECT_QUERY@
 GREP = @GREP@
 GTK2_CFLAGS = @GTK2_CFLAGS@
 GTK2_LIBS = @GTK2_LIBS@
+GTK3_CFLAGS = @GTK3_CFLAGS@
+GTK3_LIBS = @GTK3_LIBS@
+GTK_API_VERSION = @GTK_API_VERSION@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -273,6 +291,8 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
+PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
+PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 POFILES = @POFILES@
 POSUB = @POSUB@
 PO_IN_DATADIR_FALSE = @PO_IN_DATADIR_FALSE@
@@ -337,7 +357,6 @@ libexecdir = @libexecdir@
 libinput_pad_VERSION = @libinput_pad_VERSION@
 localedir = @localedir@
 localstatedir = @localstatedir@
-lt_ECHO = @lt_ECHO@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -367,8 +386,8 @@ INCLUDES = -I$(top_srcdir) \
 	-DINPUT_PAD_PAD_SYSTEM_DIR=\""$(pkgdatadir)/pad"\" \
 	-DINPUT_PAD_UI_GTK_DIR=\""$(pkgdatadir)/ui/gtk"\" \
 	-DMODULE_KBDUI_DIR=\""$(MODULE_KBDUI_DIR)"\" \
-	-DDATAROOTDIR=\""$(datarootdir)"\" $(NULL) $(am__append_1) \
-	$(am__append_2)
+	-DDATAROOTDIR=\""$(datarootdir)"\" $(NULL) $(am__append_5) \
+	$(am__append_10)
 BUILT_SOURCES = \
 	input-pad-marshal.c                                     \
 	input-pad-marshal.h                                     \
@@ -402,22 +421,10 @@ libinput_pad_la_SOURCES = \
 	window-gtk.c                                            \
 	$(NULL)
 
-libinput_pad_la_CFLAGS = \
-	$(GTK2_CFLAGS)                                          \
-	$(LIBXML2_CFLAGS)                                       \
-	$(X11_CFLAGS)                                           \
-	$(XKB_CFLAGS)                                           \
-	$(LIBXKLAVIER_CFLAGS)                                   \
-	$(NULL)
-
-libinput_pad_la_LIBADD = \
-	$(GTK2_LIBS)                                            \
-	$(LIBXML2_LIBS)                                         \
-	$(X11_LIBS)                                             \
-	$(XKB_LIBS)                                             \
-	$(LIBXKLAVIER_LIBS)                                     \
-	$(NULL)
-
+libinput_pad_la_CFLAGS = $(LIBXML2_CFLAGS) $(X11_CFLAGS) $(XKB_CFLAGS) \
+	$(LIBXKLAVIER_CFLAGS) $(NULL) $(am__append_1) $(am__append_3)
+libinput_pad_la_LIBADD = $(LIBXML2_LIBS) $(X11_LIBS) $(XKB_LIBS) \
+	$(LIBXKLAVIER_LIBS) $(NULL) $(am__append_2) $(am__append_4)
 libinput_pad_la_LDFLAGS = \
 	-export-dynamic                                         \
 	-version-info $(LT_VERSION_INFO)                        \
@@ -431,18 +438,12 @@ libinput_pad_la_LDFLAGS = \
 @HAVE_XTEST_TRUE@	xtest-gdk.c                                             \
 @HAVE_XTEST_TRUE@	$(NULL)
 
-@HAVE_XTEST_TRUE@libinput_pad_xtest_gdk_la_CFLAGS = \
-@HAVE_XTEST_TRUE@	$(GTK2_CFLAGS)                                          \
-@HAVE_XTEST_TRUE@	$(X11_CFLAGS)                                           \
-@HAVE_XTEST_TRUE@	$(NULL)
-
-@HAVE_XTEST_TRUE@libinput_pad_xtest_gdk_la_LIBADD = \
-@HAVE_XTEST_TRUE@	$(builddir)/libinput-pad.la                             \
-@HAVE_XTEST_TRUE@	$(GTK2_LIBS)                                            \
-@HAVE_XTEST_TRUE@	$(X11_LIBS)                                             \
-@HAVE_XTEST_TRUE@	$(XTEST_LIBS)                                           \
-@HAVE_XTEST_TRUE@	$(NULL)
-
+@HAVE_XTEST_TRUE@libinput_pad_xtest_gdk_la_CFLAGS = $(X11_CFLAGS) \
+@HAVE_XTEST_TRUE@	$(NULL) $(am__append_6) $(am__append_8)
+@HAVE_XTEST_TRUE@libinput_pad_xtest_gdk_la_LIBADD =  \
+@HAVE_XTEST_TRUE@	$(builddir)/libinput-pad.la $(X11_LIBS) \
+@HAVE_XTEST_TRUE@	$(XTEST_LIBS) $(NULL) $(am__append_7) \
+@HAVE_XTEST_TRUE@	$(am__append_9)
 @HAVE_XTEST_TRUE@libinput_pad_xtest_gdk_la_LDFLAGS = \
 @HAVE_XTEST_TRUE@	-export-dynamic                                         \
 @HAVE_XTEST_TRUE@	-avoid-version                                          \
