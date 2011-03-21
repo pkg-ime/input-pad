@@ -3,6 +3,7 @@ input-pad (1.0.0-1) unstable; urgency=low
   * New upstream release
   * Set Vcs to git.debina.org 
   * Bump libinput-pad0 to libinput-pad1
+  * Set DM-Upload-Allowed to yes
 
  -- Asias He <asias.hejun@gmail.com>  Sun, 20 Mar 2011 09:46:10 +0800
 
