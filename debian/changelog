@@ -1,3 +1,12 @@
+input-pad (1.0.0-2) unstable; urgency=low
+
+  * Fix "Please don't install la file in dev-package (Policy 10.2)"
+    (Closes: #620771)
+  * Fix "Getting rid of unneeded *.la / emptying dependency_libs"
+    (Closes: #621703)
+
+ -- Asias He <asias.hejun@gmail.com>  Sun, 10 Apr 2011 09:56:59 +0800
+
 input-pad (1.0.0-1) unstable; urgency=low
 
   * New upstream release
