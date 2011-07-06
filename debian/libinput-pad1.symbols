@@ -7,6 +7,8 @@ libinput-pad.so.1 libinput-pad1 #MINVER#
  command_table_get_label_array@Base 1.0.0
  input_pad_gdk_xkb_destroy_keyboard_layouts@Base 1.0.0
  input_pad_gdk_xkb_get_group_layouts@Base 1.0.0
+ input_pad_gdk_xkb_get_group_options@Base 1.0.1
+ input_pad_gdk_xkb_get_group_variants@Base 1.0.1
  input_pad_gdk_xkb_parse_config_registry@Base 1.0.0
  input_pad_gdk_xkb_parse_keyboard_layouts@Base 1.0.0
  input_pad_gdk_xkb_set_layout@Base 1.0.0

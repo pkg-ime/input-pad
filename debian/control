@@ -19,7 +19,7 @@ Build-Depends:
     python-dev,
     swig,
     debhelper (>= 7.0.50)
-Standards-Version: 3.9.1
+Standards-Version: 3.9.2
 Homepage: http://code.google.com/p/input-pad/
 Vcs-Git: git://git.debian.org/pkg-ime/input-pad.git
 Vcs-Browser: http://git.debian.org/?p=pkg-ime/input-pad.git

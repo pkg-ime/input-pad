@@ -1,3 +1,10 @@
+input-pad (1.0.1-1) unstable; urgency=low
+
+  * New upstream release
+  * Bump standards version to 3.9.2
+
+ -- Asias He <asias.hejun@gmail.com>  Wed, 06 Jul 2011 22:17:07 +0800
+
 input-pad (1.0.0-2) unstable; urgency=low
 
   * Fix "Please don't install la file in dev-package (Policy 10.2)"
