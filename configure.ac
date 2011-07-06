@@ -2,8 +2,8 @@
 #
 # input-pad - The input pad 
 #
-# Copyright (c) 2010 Takao Fujiwara <takao.fujiwara1@gmail.com>
-# Copyright (c) 2010 Red Hat, Inc.
+# Copyright (c) 2010-2011 Takao Fujiwara <takao.fujiwara1@gmail.com>
+# Copyright (c) 2010-2011 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -24,7 +24,7 @@ dnl - if not 1, append datestamp to the version number.
 m4_define([pad_released], [1])
 m4_define([pad_major_version], [1])
 m4_define([pad_minor_version], [0])
-m4_define([pad_micro_version], [0])
+m4_define([pad_micro_version], [1])
 m4_define(pad_maybe_datestamp,
     m4_esyscmd([if test x]pad_released[ != x1; then date +.%Y%m%d | tr -d '\n\r'; fi]))
 
@@ -142,7 +142,7 @@ AC_MSG_RESULT($enable_eek)
 if test x"$enable_eek" = xyes; then
     dnl - check eek is available
     PKG_CHECK_MODULES(EEK, [
-        eek-gtk-0.1 eek-xkl-0.1
+        eek-gtk-0.90 eek-xkl-0.90
 	],, AC_MSG_ERROR([libeek not found]))
     AM_CONDITIONAL(HAVE_EEK, true)
 else
@@ -164,6 +164,9 @@ if test x"$enable_python" = xyes; then
     AM_CONDITIONAL(HAVE_PYTHON, true)
     AM_PATH_PYTHON([2.5], [], [])
     AC_PATH_PROG(PYTHON_CONFIG, python$PYTHON_VERSION-config)
+    if test x"$PYTHON_CONFIG" = x""; then
+        AC_PATH_PROG(PYTHON_CONFIG, python-config-$PYTHON_VERSION)
+    fi
     if test x"$PYTHON_CONFIG" != x""; then
         PYTHON_CFLAGS=`$PYTHON_CONFIG --includes`
         PYTHON_LIBS=`$PYTHON_CONFIG --libs`
@@ -216,7 +219,7 @@ AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE", [Gettext package])
 
 AM_GLIB_GNU_GETTEXT
-AM_GLIB_DEFINE_LOCALEDIR(IBUS_LOCALEDIR)
+AM_GLIB_DEFINE_LOCALEDIR(INPUT_PAD_LOCALEDIR)
 
 dnl - OUTPUT files
 AC_CONFIG_FILES([ po/Makefile.in

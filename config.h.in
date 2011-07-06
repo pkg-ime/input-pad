@@ -55,7 +55,7 @@
 #undef HAVE_UNISTD_H
 
 /* Define the location where the catalogs will be installed */
-#undef IBUS_LOCALEDIR
+#undef INPUT_PAD_LOCALEDIR
 
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */

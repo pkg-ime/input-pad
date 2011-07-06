@@ -1,7 +1,7 @@
 /* vim:set et sts=4: */
 /* input-pad - The input pad
- * Copyright (C) 2010 Takao Fujiwara <takao.fujiwara1@gmail.com>
- * Copyright (C) 2010 Red Hat, Inc.
+ * Copyright (C) 2010-2011 Takao Fujiwara <takao.fujiwara1@gmail.com>
+ * Copyright (C) 2010-2011 Red Hat, Inc.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,6 +30,10 @@
 #include <X11/keysym.h>
 #include <string.h> /* strlen */
 #include <stdlib.h> /* exit */
+
+#ifdef ENABLE_NLS
+#include <locale.h>
+#endif
 
 #include "i18n.h"
 #include "button-gtk.h"
@@ -99,6 +103,8 @@ struct _InputPadGtkWindowPrivate {
     guint                       keyboard_state;
     InputPadXKBConfigReg       *xkb_config_reg;
     gchar                     **group_layouts;
+    gchar                     **group_variants;
+    gchar                     **group_options;
     guint                       char_button_sensitive : 1;
     GdkColor                   *color_gray;
     /* The kbdui_name is used for each window instance. */
@@ -108,6 +114,12 @@ struct _InputPadGtkWindowPrivate {
     GtkToggleAction            *show_custom_chars_action;
     GtkToggleAction            *show_nothing_action;
     GtkToggleAction            *show_layout_action;
+    GtkWidget                  *config_layouts_dialog;
+    GtkWidget                  *config_layouts_add_treeview;
+    GtkWidget                  *config_layouts_remove_treeview;
+    GtkWidget                  *config_layouts_combobox;
+    GtkWidget                  *config_options_dialog;
+    GtkWidget                  *config_options_vbox;
 };
 
 struct _CodePointData {
@@ -156,10 +168,6 @@ static GtkBuildableIface       *parent_buildable_iface;
 #endif
 
 static GOptionEntry entries[] = {
-#ifdef MODULE_XTEST_GDK_BASE
-  { "enable-module-xtest", 'x', 0, G_OPTION_ARG_NONE, &use_module_xtest,
-    N_("Use XTEST module to send key events"), NULL},
-#endif
   { "version", 'v', 0, G_OPTION_ARG_NONE, &ask_version,
     N_("Display version"), NULL},
   { "with-kbdui", 'k', 0, G_OPTION_ARG_STRING, &kbdui_name,
@@ -173,6 +181,18 @@ static GOptionEntry entries[] = {
     N_("Use TYPE of keyboard layout. The available TYPE=0, 1"), "TYPE"},
   { NULL }
 };
+
+#ifdef MODULE_XTEST_GDK_BASE
+static GOptionEntry enable_xtest_entry[] = {
+  { "enable-module-xtest", 'x', 0, G_OPTION_ARG_NONE, &use_module_xtest,
+    N_("Use XTEST module to send key events"), NULL},
+};
+
+static GOptionEntry disable_xtest_entry[] = {
+  { "disable-module-xtest", 'x', 0, G_OPTION_ARG_NONE, &use_module_xtest,
+    N_("Use XSendEvent to send key events"), NULL},
+};
+#endif
 
 static void             check_window_size_with_hide_widget
                                                 (GtkWidget         *hide_widget,
@@ -222,6 +242,21 @@ static void             destroy_prev_keyboard_layout_default
 G_INLINE_FUNC void      destroy_prev_keyboard_layout
                                                 (GtkWidget         *vbox,
                                                  InputPadGtkWindow *window);
+static void             config_layouts_combobox_remove_layout
+                                                (GtkTreeStore *list,
+                                                 const gchar *layout_name,
+                                                 const gchar *layout_desc,
+                                                 const gchar *variant_name,
+                                                 const gchar *variant_desc);
+static void             config_layouts_list_append_layout
+                                                (GtkListStore *list,
+                                                 const gchar *layout_name,
+                                                 const gchar *layout_desc,
+                                                 const gchar *variant_name,
+                                                 const gchar *variant_desc);
+static void             config_layouts_list_remove_iter
+                                                (GtkListStore *list,
+                                                 GtkTreeIter  *iter);
 static void             create_keyboard_layout_list_ui_real
                                                 (GtkWidget         *vbox,
                                                  InputPadGtkWindow *window);
@@ -279,6 +314,8 @@ on_window_close (InputPadGtkWindow *window, gpointer data)
     if (window->child == 1) {
         gtk_widget_destroy (GTK_WIDGET (window));
     } else {
+        input_pad_gdk_xkb_set_layout (window, window->priv->xkb_key_list,
+                                      NULL, NULL, NULL);
         gtk_main_quit ();
     }
 }
@@ -356,9 +393,11 @@ on_window_keyboard_changed_combobox (InputPadGtkWindow *window,
             (g_strcmp0 (active_layout, layout) != 0)) {
             gtk_combo_box_set_active_iter (GTK_COMBO_BOX (data), &iter);
             g_free (layout);
+            g_free (desc);
             break;
         }
         g_free (layout);
+        g_free (desc);
     } while (gtk_tree_model_iter_next (model, &iter));
     g_free (active_layout);
 }
@@ -661,7 +700,9 @@ on_combobox_layout_changed (GtkComboBox *combobox,
     InputPadGtkWindow *window;
     GtkTreeIter iter;
     GtkTreeModel *model;
-    gchar *layout;
+    gchar *layout = NULL;
+    gchar *variant = NULL;
+    gchar *option = NULL;
     GtkWidget *keyboard_vbox;
 
     g_return_if_fail (data != NULL &&
@@ -673,10 +714,16 @@ on_combobox_layout_changed (GtkComboBox *combobox,
     }
     model = gtk_combo_box_get_model (combobox);
     gtk_tree_model_get (model, &iter,
-                        LAYOUT_LAYOUT_NAME_COL, &layout, -1);
+                        LAYOUT_LAYOUT_NAME_COL, &layout,
+                        LAYOUT_VARIANT_NAME_COL, &variant, -1);
+    if (window->priv->group_options) {
+        option = g_strjoinv (",", window->priv->group_options);
+    }
     input_pad_gdk_xkb_set_layout (window, window->priv->xkb_key_list,
-                                  layout, NULL, NULL);
+                                  layout, variant, option);
     g_free (layout);
+    g_free (variant);
+    g_free (option);
 
     if (window->priv->xkb_key_list) {
         input_pad_gdk_xkb_destroy_keyboard_layouts (window,
@@ -697,8 +744,22 @@ on_combobox_layout_changed (GtkComboBox *combobox,
         g_strfreev (window->priv->group_layouts);
         window->priv->group_layouts = NULL;
     }
+    if (window->priv->group_variants) {
+        g_strfreev (window->priv->group_variants);
+        window->priv->group_variants = NULL;
+    }
+    if (window->priv->group_options) {
+        g_strfreev (window->priv->group_options);
+        window->priv->group_options = NULL;
+    }
     window->priv->group_layouts =
         input_pad_gdk_xkb_get_group_layouts (window,
+                                             window->priv->xkb_key_list);
+    window->priv->group_variants =
+        input_pad_gdk_xkb_get_group_variants (window,
+                                              window->priv->xkb_key_list);
+    window->priv->group_options =
+        input_pad_gdk_xkb_get_group_options (window,
                                              window->priv->xkb_key_list);
     input_pad_gdk_xkb_signal_emit (window, signals[KBD_CHANGED]);
 }
@@ -900,6 +961,237 @@ on_button_send_clicked (GtkButton *button, gpointer data)
 }
 
 static void
+on_button_config_layouts_clicked (GtkButton *button, gpointer data)
+{
+    GtkWidget *dlg = GTK_WIDGET (data);
+
+    gtk_dialog_run (GTK_DIALOG (dlg));
+    gtk_widget_hide (dlg);
+}
+
+static void
+on_button_config_layouts_close_clicked (GtkButton *button, gpointer data)
+{
+    GtkWidget *dlg = GTK_WIDGET (data);
+
+    gtk_widget_hide (dlg);
+}
+
+static void
+on_button_config_layouts_add_clicked (GtkButton *button, gpointer data)
+{
+    InputPadGtkWindow *window;
+    GtkWidget *combobox;
+    GtkWidget *add_treeview;
+    GtkWidget *remove_treeview;
+    GtkTreeModel *combo_model;
+    GtkTreeModel *add_model;
+    GtkTreeModel *remove_model;
+    GtkTreeSelection *selection;
+    GtkTreeIter iter;
+    gchar *layout_name = NULL;
+    gchar *layout_desc = NULL;
+    gchar *variant_name = NULL;
+    gchar *variant_desc = NULL;
+
+    g_return_if_fail (data != NULL &&
+                      INPUT_PAD_IS_GTK_WINDOW (data));
+
+    window = INPUT_PAD_GTK_WINDOW (data);
+    combobox = window->priv->config_layouts_combobox;
+    add_treeview = window->priv->config_layouts_add_treeview;
+    combo_model = gtk_combo_box_get_model (GTK_COMBO_BOX (combobox));
+    remove_treeview = window->priv->config_layouts_remove_treeview;
+    remove_model = gtk_tree_view_get_model (GTK_TREE_VIEW (remove_treeview));
+    selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (add_treeview));
+
+    if (!gtk_tree_selection_get_selected (selection, &add_model, &iter)) {
+        return;
+    }
+
+    gtk_tree_model_get (add_model, &iter,
+                        LAYOUT_LAYOUT_NAME_COL,
+                        &layout_name,
+                        LAYOUT_LAYOUT_DESC_COL,
+                        &layout_desc,
+                        LAYOUT_VARIANT_NAME_COL,
+                        &variant_name,
+                        LAYOUT_VARIANT_DESC_COL,
+                        &variant_desc,
+                        -1);
+    config_layouts_list_remove_iter (GTK_LIST_STORE (add_model), &iter);
+    config_layouts_list_append_layout (GTK_LIST_STORE (remove_model),
+                                       layout_name, layout_desc,
+                                       variant_name, variant_desc);
+    gtk_tree_store_append (GTK_TREE_STORE (combo_model), &iter, NULL);
+    gtk_tree_store_set (GTK_TREE_STORE (combo_model), &iter,
+                        LAYOUT_LAYOUT_NAME_COL,
+                        g_strdup (layout_name),
+                        LAYOUT_LAYOUT_DESC_COL,
+                        variant_desc ? g_strdup (variant_desc) :
+                            g_strdup (layout_desc),
+                        LAYOUT_VARIANT_NAME_COL,
+                        g_strdup (variant_name),
+                        LAYOUT_VARIANT_DESC_COL, NULL,
+                        LAYOUT_VISIBLE_COL, TRUE, -1);
+    g_free (layout_name);
+    g_free (layout_desc);
+    g_free (variant_name);
+    g_free (variant_desc);
+}
+
+static void
+on_button_config_layouts_remove_clicked (GtkButton *button, gpointer data)
+{
+    InputPadGtkWindow *window;
+    gchar **group_layouts = NULL;
+    gchar **group_variants = NULL;
+    GtkWidget *combobox;
+    GtkWidget *add_treeview;
+    GtkWidget *remove_treeview;
+    GtkTreeModel *combo_model;
+    GtkTreeModel *add_model;
+    GtkTreeModel *remove_model;
+    GtkTreeSelection *selection;
+    GtkTreeIter iter;
+    gchar *layout_name = NULL;
+    gchar *layout_desc = NULL;
+    gchar *variant_name = NULL;
+    gchar *variant_desc = NULL;
+    int i;
+    gboolean is_default_layout = FALSE;
+
+    g_return_if_fail (data != NULL &&
+                      INPUT_PAD_IS_GTK_WINDOW (data));
+
+    window = INPUT_PAD_GTK_WINDOW (data);
+    group_layouts = window->priv->group_layouts;
+    group_variants = window->priv->group_variants;
+    combobox = window->priv->config_layouts_combobox;
+    add_treeview = window->priv->config_layouts_add_treeview;
+    remove_treeview = window->priv->config_layouts_remove_treeview;
+    combo_model = gtk_combo_box_get_model (GTK_COMBO_BOX (combobox));
+    add_model = gtk_tree_view_get_model (GTK_TREE_VIEW (add_treeview));
+    selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (remove_treeview));
+
+    if (!gtk_tree_selection_get_selected (selection, &remove_model, &iter)) {
+        return;
+    }
+
+    gtk_tree_model_get (remove_model, &iter,
+                        LAYOUT_LAYOUT_NAME_COL,
+                        &layout_name,
+                        LAYOUT_LAYOUT_DESC_COL,
+                        &layout_desc,
+                        LAYOUT_VARIANT_NAME_COL,
+                        &variant_name,
+                        LAYOUT_VARIANT_DESC_COL,
+                        &variant_desc,
+                        -1);
+
+    for (i = 0; group_layouts[i]; i++) {
+        if (!g_strcmp0 (group_layouts[i], layout_name)) {
+            if (group_variants == NULL ||
+                i >= g_strv_length (group_variants) ||
+                group_variants[i] == NULL ||
+                *group_variants[i] == '\0') {
+                if (variant_name == NULL) {
+                    is_default_layout = TRUE;
+                    break;
+                }
+            } else if (!g_strcmp0 (group_variants[i], variant_name)) {
+                is_default_layout = TRUE;
+                break;
+            }
+        }
+    }
+
+    if (!is_default_layout) {
+        config_layouts_list_remove_iter (GTK_LIST_STORE (remove_model), &iter);
+        config_layouts_list_append_layout (GTK_LIST_STORE (add_model),
+                                           layout_name, layout_desc,
+                                           variant_name, variant_desc);
+        config_layouts_combobox_remove_layout (GTK_TREE_STORE (combo_model),
+                                               layout_name, layout_desc,
+                                               variant_name, variant_desc);
+    }
+
+    g_free (layout_name);
+    g_free (layout_desc);
+    g_free (variant_name);
+    g_free (variant_desc);
+}
+
+static void
+on_button_config_options_close_clicked (GtkButton *button, gpointer data)
+{
+    InputPadGtkWindow *window;
+    GList *list = NULL;
+    GList *list_button = NULL;
+    GtkWidget *expander;
+    GtkWidget *alignment;
+    GtkWidget *vbox;
+    GtkWidget *checkbutton;
+    GtkWidget *combobox;
+    GtkTreeIter iter;
+    GtkTreeModel *model;
+    const gchar *text;
+    gchar *layout = NULL;
+    gchar *variant = NULL;
+    gchar *option = NULL;
+
+    g_return_if_fail (data != NULL &&
+                      INPUT_PAD_IS_GTK_WINDOW (data));
+
+    window = INPUT_PAD_GTK_WINDOW (data);
+
+    gtk_widget_hide (window->priv->config_options_dialog);
+
+    list = gtk_container_get_children (GTK_CONTAINER (window->priv->config_options_vbox));
+    while (list) {
+        expander = GTK_WIDGET (list->data);
+        alignment = GTK_WIDGET (gtk_container_get_children (GTK_CONTAINER (expander))->data);
+        vbox = GTK_WIDGET (gtk_container_get_children (GTK_CONTAINER (alignment))->data);
+        list_button = gtk_container_get_children (GTK_CONTAINER (vbox));
+        while (list_button) {
+            checkbutton = GTK_WIDGET (list_button->data);
+            text = (gchar *) g_object_get_data (G_OBJECT (checkbutton), "option");
+            if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (checkbutton))) {
+                if (option == NULL) {
+                    option = g_strdup (text);
+                } else {
+                    gchar *p = g_strdup_printf ("%s,%s", option, text);
+                    g_free (option);
+                    option = p;
+                }
+            }
+            list_button = list_button->next;
+        }
+        list = list->next;
+    }
+
+    combobox = window->priv->config_layouts_combobox;
+    if (!gtk_combo_box_get_active_iter (GTK_COMBO_BOX (combobox), &iter)) {
+        return;
+    }
+    model = gtk_combo_box_get_model (GTK_COMBO_BOX (combobox));
+    gtk_tree_model_get (model, &iter,
+                        LAYOUT_LAYOUT_NAME_COL, &layout,
+                        LAYOUT_VARIANT_NAME_COL, &variant, -1);
+    if (option) {
+        g_strfreev (window->priv->group_options);
+        window->priv->group_options = g_strsplit (option, ",", -1);
+    }
+    if (layout) {
+        input_pad_gdk_xkb_set_layout (window, window->priv->xkb_key_list,
+                                      layout, variant, option);
+    }
+    g_free (layout);
+    g_free (variant);
+    g_free (option);
+}
+
+static void
 on_button_pressed (GtkButton *button, gpointer data)
 {
     InputPadGtkWindow *window;
@@ -1030,6 +1322,35 @@ on_button_layout_arrow_pressed (GtkButton *button, gpointer data)
             gtk_widget_queue_resize (toplevel);
         }
     }
+}
+
+static void
+on_checkbutton_config_options_option_clicked (GtkButton *button, gpointer data)
+{
+    GtkWidget *expander;
+    GtkWidget *label;
+    int checked;
+    gchar *text;
+
+    g_return_if_fail (GTK_IS_EXPANDER (data));
+    expander = GTK_WIDGET (data);
+    label = gtk_expander_get_label_widget (GTK_EXPANDER (expander));
+    checked = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (expander), "checked"));
+    if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (button))) {
+        text = g_strdup_printf ("<b>%s</b>",
+                                gtk_label_get_text (GTK_LABEL (label)));
+        gtk_label_set_markup (GTK_LABEL (label), text);
+        checked++;
+    } else {
+        checked--;
+        if (checked <= 0) {
+            text = g_strdup (gtk_label_get_text (GTK_LABEL (label)));
+            gtk_label_set_text (GTK_LABEL (label), text);
+            g_free (text);
+        }
+    }
+    g_object_set_data (G_OBJECT (expander), "checked",
+                       GINT_TO_POINTER (checked));
 }
 
 static void
@@ -1195,6 +1516,12 @@ on_window_realize (GtkWidget *window, gpointer data)
     create_keyboard_layout_ui_real (keyboard_vbox, input_pad);
     input_pad->priv->group_layouts =
         input_pad_gdk_xkb_get_group_layouts (input_pad,
+                                             input_pad->priv->xkb_key_list);
+    input_pad->priv->group_variants =
+        input_pad_gdk_xkb_get_group_variants (input_pad,
+                                              input_pad->priv->xkb_key_list);
+    input_pad->priv->group_options =
+        input_pad_gdk_xkb_get_group_options (input_pad,
                                              input_pad->priv->xkb_key_list);
     input_pad->priv->xkb_config_reg =
         input_pad_gdk_xkb_parse_config_registry (input_pad,
@@ -2141,7 +2468,8 @@ get_keysym_display_name (guint keysym, GtkWidget *widget, gchar **tooltipp)
     }
     // or KeySymToUcs4 (keysym);
     if ((ch = gdk_keyval_to_unicode (keysym)) != 0 &&
-        g_unichar_validate (ch)) {
+        g_unichar_validate (ch) &&
+        g_unichar_isprint (ch)) {
         buff[g_unichar_to_utf8 (ch, buff)] = '\0';
         display_name = g_strdup (buff);
     } else if (g_str_has_prefix (keysym_name, "XF86_Switch_VT_")) {
@@ -2462,25 +2790,347 @@ sort_layout_name (GtkTreeModel *model,
     return retval;
 }
 
-static GtkTreeModel *
-layout_model_new (InputPadXKBLayoutList *xkb_layout_list)
+static void
+config_layouts_combobox_remove_layout (GtkTreeStore *list,
+                                       const gchar *layout_name,
+                                       const gchar *layout_desc,
+                                       const gchar *variant_name,
+                                       const gchar *variant_desc)
 {
-    InputPadXKBLayoutList *layouts = xkb_layout_list;
+    GtkTreeIter   iter;
+
+    gtk_tree_model_get_iter_first (GTK_TREE_MODEL (list), &iter);
+    do {
+        gchar *combo_layout_name = NULL;
+        gchar *combo_layout_desc = NULL;
+        gchar *combo_variant_name = NULL;
+        gchar *combo_variant_desc = NULL;
+
+        gtk_tree_model_get (GTK_TREE_MODEL (list), &iter,
+                            LAYOUT_LAYOUT_NAME_COL,
+                            &combo_layout_name,
+                            LAYOUT_LAYOUT_DESC_COL,
+                            &combo_layout_desc,
+                            LAYOUT_VARIANT_NAME_COL,
+                            &combo_variant_name,
+                            LAYOUT_VARIANT_DESC_COL,
+                            &combo_variant_desc,
+                            -1);
+        if (!g_strcmp0 (combo_layout_name, layout_name) &&
+            !g_strcmp0 (combo_variant_name, variant_name)) {
+            gtk_tree_store_remove (GTK_TREE_STORE (list), &iter);
+            g_free (combo_layout_name);
+            g_free (combo_layout_desc);
+            g_free (combo_variant_name);
+            g_free (combo_variant_desc);
+            break;
+        }
+        g_free (combo_layout_name);
+        g_free (combo_layout_desc);
+        g_free (combo_variant_name);
+        g_free (combo_variant_desc);
+    } while (gtk_tree_model_iter_next (GTK_TREE_MODEL (list), &iter));
+}
+
+static void
+config_layouts_list_append_layout (GtkListStore *list,
+                                   const gchar *layout_name,
+                                   const gchar *layout_desc,
+                                   const gchar *variant_name,
+                                   const gchar *variant_desc)
+{
+    GtkTreeIter   iter;
+
+    gtk_list_store_append (list, &iter);
+    gtk_list_store_set (list, &iter,
+                        LAYOUT_LAYOUT_NAME_COL,
+                        g_strdup (layout_name),
+                        LAYOUT_LAYOUT_DESC_COL,
+                        variant_desc ? g_strdup (variant_desc) :
+                            g_strdup (layout_desc),
+                        LAYOUT_VARIANT_NAME_COL,
+                        g_strdup (variant_name),
+                        LAYOUT_VARIANT_DESC_COL, NULL,
+                        LAYOUT_VISIBLE_COL, TRUE, -1);
+}
+
+static void
+config_layouts_list_remove_iter (GtkListStore *list,
+                                 GtkTreeIter  *iter)
+{
+    if (!gtk_list_store_remove (list, iter)) {
+        /* FIXME: Should set iter at the end again? */
+        return;
+    }
+#if GTK_CHECK_VERSION (3, 0, 0)
+    if (!gtk_tree_model_iter_previous (GTK_TREE_MODEL (list), iter)) {
+        gtk_tree_model_get_iter_first (GTK_TREE_MODEL (list), iter);
+    }
+#else
+    gtk_tree_model_get_iter_first (GTK_TREE_MODEL (list), iter);
+#endif
+}
+
+static void
+config_layouts_treeview_set_list (GtkWidget    *treeview,
+                                  GtkListStore *list,
+                                  gboolean      is_sortable)
+{
+    GtkCellRenderer *renderer;
+    GtkTreeViewColumn *column;
+
+    if (is_sortable) {
+        gtk_tree_sortable_set_sort_func (GTK_TREE_SORTABLE (list),
+                                         LAYOUT_LAYOUT_DESC_COL,
+                                         sort_layout_name,
+                                         NULL, NULL);
+        gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE (list),
+                                              LAYOUT_LAYOUT_DESC_COL,
+                                              GTK_SORT_ASCENDING);
+    }
+    gtk_tree_view_set_model (GTK_TREE_VIEW (treeview), GTK_TREE_MODEL (list));
+    g_object_unref (G_OBJECT (list));
+
+    renderer = gtk_cell_renderer_text_new ();
+    column = gtk_tree_view_column_new_with_attributes (_("Layout"), renderer,
+                                                       "text", LAYOUT_LAYOUT_DESC_COL,
+                                                       "visible", LAYOUT_VISIBLE_COL,
+                                                       NULL);
+    gtk_tree_view_append_column (GTK_TREE_VIEW (treeview), column);
+    gtk_widget_show (treeview);
+}
+
+static void
+config_layouts_treeview_set (InputPadGtkWindow         *input_pad,
+                             InputPadXKBLayoutList     *xkb_layout_list)
+{
+    InputPadXKBLayoutList *layouts = NULL;
+    GtkTreeIter   iter;
+    GtkListStore *add_list;
+    GtkListStore *remove_list;
+    gchar **group_layouts = input_pad->priv->group_layouts;
+    gchar **group_variants = input_pad->priv->group_variants;
+    int i;
+
+    add_list = gtk_list_store_new (LAYOUT_N_COLS,
+                                   G_TYPE_STRING,
+                                   G_TYPE_STRING,
+                                   G_TYPE_STRING,
+                                   G_TYPE_STRING,
+                                   G_TYPE_BOOLEAN);
+    remove_list = gtk_list_store_new (LAYOUT_N_COLS,
+                                      G_TYPE_STRING,
+                                      G_TYPE_STRING,
+                                      G_TYPE_STRING,
+                                      G_TYPE_STRING,
+                                      G_TYPE_BOOLEAN);
+
+    for (layouts = xkb_layout_list; layouts; layouts = layouts->next) {
+        InputPadXKBVariantList *variants = layouts->variants;
+
+        config_layouts_list_append_layout (add_list,
+                                           layouts->layout,
+                                           layouts->desc,
+                                           NULL,
+                                           NULL);
+        while (variants) {
+            config_layouts_list_append_layout (add_list,
+                                               layouts->layout,
+                                               layouts->desc,
+                                               variants->variant,
+                                               variants->desc);
+            variants = variants->next;
+        }
+    }
+
+    gtk_tree_model_get_iter_first (GTK_TREE_MODEL (add_list), &iter);
+    do {
+        gchar *layout_name = NULL;
+        gchar *layout_desc = NULL;
+        gchar *variant_name = NULL;
+        gchar *variant_desc = NULL;
+
+        gtk_tree_model_get (GTK_TREE_MODEL (add_list), &iter,
+                            LAYOUT_LAYOUT_NAME_COL,
+                            &layout_name,
+                            LAYOUT_LAYOUT_DESC_COL,
+                            &layout_desc,
+                            LAYOUT_VARIANT_NAME_COL,
+                            &variant_name,
+                            LAYOUT_VARIANT_DESC_COL,
+                            &variant_desc,
+                            -1);
+        for (i = 0; group_layouts[i]; i++) {
+            if (!g_strcmp0 (group_layouts[i], layout_name)) {
+                if (group_variants == NULL ||
+                    i >= g_strv_length (group_variants) ||
+                    group_variants[i] == NULL ||
+                    *group_variants[i] == '\0') {
+                    if (variant_name == NULL) {
+                        config_layouts_list_remove_iter (add_list, &iter);
+                        config_layouts_list_append_layout (remove_list,
+                                                           layout_name,
+                                                           layout_desc,
+                                                           variant_name,
+                                                           variant_desc);
+                        break;
+                    }
+                } else {
+                    if (!g_strcmp0 (group_variants[i], variant_name)) {
+                        config_layouts_list_remove_iter (add_list, &iter);
+                        config_layouts_list_append_layout (remove_list,
+                                                           layout_name,
+                                                           layout_desc,
+                                                           variant_name,
+                                                           variant_desc);
+                        break;
+                    }
+                }
+            }
+        }
+        g_free (layout_name);
+        g_free (layout_desc);
+        g_free (variant_name);
+        g_free (variant_desc);
+    } while (gtk_tree_model_iter_next (GTK_TREE_MODEL (add_list), &iter));
+
+    config_layouts_treeview_set_list (input_pad->priv->config_layouts_add_treeview,
+                                      add_list, TRUE);
+    config_layouts_treeview_set_list (input_pad->priv->config_layouts_remove_treeview,
+                                      remove_list, FALSE);
+}
+
+static void
+config_options_treeview_set (InputPadGtkWindow                 *input_pad,
+                             InputPadXKBOptionGroupList        *xkb_group_list)
+{
+    InputPadXKBOptionGroupList *groups = NULL;
+    GtkWidget *expander;
+    GtkWidget *alignment;
+    GtkWidget *vbox;
+    GtkWidget *checkbutton;
+    GtkWidget *label;
+    gchar **group_options = input_pad->priv->group_options;
+    int i;
+
+    for (groups = xkb_group_list ; groups; groups = groups->next) {
+        int checked = 0;
+
+        expander = gtk_expander_new (groups->desc);
+        gtk_box_pack_start (GTK_BOX (input_pad->priv->config_options_vbox),
+                            expander, TRUE, TRUE, 0);
+        gtk_widget_show (expander);
+        g_object_set_data (G_OBJECT (expander), "option_group",
+                           (gpointer) groups->option_group);
+        g_object_set_data (G_OBJECT (expander), "checked",
+                           GINT_TO_POINTER (checked));
+        alignment = gtk_alignment_new (0, 0, 1, 0);
+        gtk_alignment_set_padding (GTK_ALIGNMENT (alignment), 6, 0, 18, 0);
+        gtk_container_add (GTK_CONTAINER (expander), alignment);
+        gtk_widget_show (alignment);
+        vbox = gtk_vbox_new (FALSE, 0);
+        gtk_container_add (GTK_CONTAINER (alignment), vbox);
+        gtk_widget_show (vbox);
+
+        InputPadXKBOptionList *options = groups->options;
+        while (options) {
+            gboolean has_option = FALSE;
+
+            checkbutton = gtk_check_button_new_with_label (options->desc);
+            g_object_set_data (G_OBJECT (checkbutton), "option",
+                               (gpointer) options->option);
+            for (i = 0; group_options[i]; i++) {
+                if (!g_strcmp0 (group_options[i], options->option)) {
+                    has_option = TRUE;
+                    break;
+                }
+            }
+            if (has_option) {
+                gchar *text = g_strdup_printf ("<b>%s</b>", groups->desc);
+
+                gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (checkbutton),
+                                              TRUE);
+                label = gtk_expander_get_label_widget (GTK_EXPANDER (expander));
+                gtk_label_set_markup (GTK_LABEL (label), text);
+                g_free (text);
+                g_object_set_data (G_OBJECT (expander), "checked",
+                                   GINT_TO_POINTER (++checked));
+            }
+            g_signal_connect (checkbutton, "toggled",
+                              G_CALLBACK (on_checkbutton_config_options_option_clicked),
+                              (gpointer) expander);
+            gtk_box_pack_start (GTK_BOX (vbox), checkbutton, FALSE, TRUE, 0);
+            gtk_widget_show (checkbutton);
+            options = options->next;
+        }
+    }
+}
+
+static GtkTreeModel *
+layout_model_new (InputPadGtkWindow            *input_pad,
+                  InputPadXKBLayoutList        *xkb_layout_list)
+{
+    InputPadXKBLayoutList *layouts = NULL;
     GtkTreeStore *store;
     GtkTreeIter   iter;
+    gchar **group_layouts = input_pad->priv->group_layouts;
+    gchar **group_variants = input_pad->priv->group_variants;
+    int i;
 
     store = gtk_tree_store_new (LAYOUT_N_COLS, G_TYPE_STRING, G_TYPE_STRING,
                                 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN);
-    while (layouts) {
+    for (i = 0; group_layouts[i]; i++) {
+        const gchar *layout_name = NULL;
+        const gchar *layout_desc = NULL;
+        const gchar *variant_name = NULL;
+        const gchar *variant_desc = NULL;
+        gboolean has_layout = FALSE;
+
+        for (layouts = xkb_layout_list ;layouts; layouts = layouts->next) {
+            InputPadXKBVariantList *variants = layouts->variants;
+
+            if (!g_strcmp0 (group_layouts[i], layouts->layout)) {
+                layout_name = layouts->layout;
+                layout_desc = layouts->desc;
+                if (group_variants == NULL ||
+                    i >= g_strv_length (group_variants) ||
+                    group_variants[i] == NULL ||
+                    *group_variants[i] == '\0') {
+                    has_layout = TRUE;
+                    break;
+                }
+                while (variants) {
+                    if (!g_strcmp0 (group_variants[i], variants->variant)) {
+                        has_layout = TRUE;
+                        variant_name = variants->variant;
+                        variant_desc = variants->desc;
+                        break;
+                    }
+                    variants = variants->next;
+                }
+            }
+            if (has_layout) {
+                break;
+            }
+        }
+        if (!has_layout) {
+            continue;
+        }
         gtk_tree_store_append (store, &iter, NULL);
         gtk_tree_store_set (store, &iter,
-                            LAYOUT_LAYOUT_NAME_COL, layouts->layout,
-                            LAYOUT_LAYOUT_DESC_COL, layouts->desc ? layouts->desc : layouts->layout,
-                            LAYOUT_VARIANT_NAME_COL, "",
-                            LAYOUT_VARIANT_DESC_COL, "",
+                            LAYOUT_LAYOUT_NAME_COL,
+                            g_strdup (layout_name),
+                            LAYOUT_LAYOUT_DESC_COL,
+                            variant_desc ? g_strdup (variant_desc) :
+                                g_strdup (layout_desc),
+                            LAYOUT_VARIANT_NAME_COL,
+                            g_strdup (variant_name),
+                            LAYOUT_VARIANT_DESC_COL, NULL,
                             LAYOUT_VISIBLE_COL, TRUE, -1);
-        layouts = layouts->next;
     }
+
+    /* Appended layouts should be last. */
+#if 0
     gtk_tree_sortable_set_sort_func (GTK_TREE_SORTABLE (store),
                                      LAYOUT_LAYOUT_DESC_COL,
                                      sort_layout_name,
@@ -2488,6 +3138,8 @@ layout_model_new (InputPadXKBLayoutList *xkb_layout_list)
     gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE (store),
                                           LAYOUT_LAYOUT_DESC_COL,
                                           GTK_SORT_ASCENDING);
+#endif
+
     return GTK_TREE_MODEL (store);
 }
 
@@ -2499,6 +3151,7 @@ create_keyboard_layout_list_ui_real (GtkWidget *vbox, InputPadGtkWindow *window)
     GtkWidget *hbox;
     GtkWidget *label;
     GtkWidget *combobox;
+    GtkWidget *button;
     GtkTreeModel *model;
     GtkTreeIter iter;
     GtkCellRenderer *renderer;
@@ -2506,7 +3159,10 @@ create_keyboard_layout_list_ui_real (GtkWidget *vbox, InputPadGtkWindow *window)
     g_return_if_fail (xkb_config_reg != NULL);
     layouts = xkb_config_reg->layouts;
     g_return_if_fail (layouts != NULL);
+    g_return_if_fail (xkb_config_reg->option_groups != NULL);
 
+    config_layouts_treeview_set (window, layouts);
+    config_options_treeview_set (window, xkb_config_reg->option_groups);
     hbox = gtk_hbox_new (FALSE, 5);
     gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
     gtk_widget_show (hbox);
@@ -2518,7 +3174,7 @@ create_keyboard_layout_list_ui_real (GtkWidget *vbox, InputPadGtkWindow *window)
     combobox = gtk_combo_box_new ();
     gtk_label_set_mnemonic_widget (GTK_LABEL (label), combobox);
     gtk_box_pack_start (GTK_BOX (hbox), combobox, FALSE, FALSE, 0);
-    model = layout_model_new (layouts);
+    model = layout_model_new (window, layouts);
     gtk_combo_box_set_model (GTK_COMBO_BOX (combobox), model);
     g_object_unref (G_OBJECT (model));
     if (gtk_tree_model_get_iter_first (model, &iter)) {
@@ -2539,6 +3195,15 @@ create_keyboard_layout_list_ui_real (GtkWidget *vbox, InputPadGtkWindow *window)
     g_signal_connect (G_OBJECT (combobox), "changed",
                       G_CALLBACK (on_combobox_layout_changed),
                       (gpointer) window);
+    window->priv->config_layouts_combobox = combobox;
+
+    button = gtk_button_new_with_mnemonic ("_Configure Layouts");
+    gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
+    gtk_widget_show (button);
+
+    g_signal_connect (button, "clicked",
+                      G_CALLBACK (on_button_config_layouts_clicked),
+                      (gpointer) window->priv->config_layouts_dialog);
 }
 
 static void
@@ -3015,12 +3680,10 @@ create_custom_char_views (GtkWidget *hbox, InputPadGtkWindow *window)
     gtk_box_pack_start (GTK_BOX (hbox), scrolled, FALSE, FALSE, 0);
     gtk_widget_show (scrolled);
 
-    viewport = gtk_viewport_new (NULL, NULL);
-    gtk_container_add (GTK_CONTAINER (scrolled), viewport);
-    gtk_widget_show (viewport);
-
+    /* GtkViewport is not used because the header of GtkTreeviewColumn
+     * is hidden with GtkViewport. */
     main_tv = gtk_tree_view_new ();
-    gtk_container_add (GTK_CONTAINER (viewport), main_tv);
+    gtk_container_add (GTK_CONTAINER (scrolled), main_tv);
     model = custom_char_group_model_new (INPUT_PAD_GTK_WINDOW (window));
     gtk_tree_view_set_model (GTK_TREE_VIEW (main_tv), model);
     g_object_unref (G_OBJECT (model));
@@ -3034,12 +3697,10 @@ create_custom_char_views (GtkWidget *hbox, InputPadGtkWindow *window)
     gtk_box_pack_start (GTK_BOX (hbox), scrolled, FALSE, FALSE, 0);
     gtk_widget_show (scrolled);
 
-    viewport = gtk_viewport_new (NULL, NULL);
-    gtk_container_add (GTK_CONTAINER (scrolled), viewport);
-    gtk_widget_show (viewport);
-
+    /* GtkViewport is not used because the header of GtkTreeviewColumn
+     * is hidden with GtkViewport. */
     sub_tv = gtk_tree_view_new ();
-    gtk_container_add (GTK_CONTAINER (viewport), sub_tv);
+    gtk_container_add (GTK_CONTAINER (scrolled), sub_tv);
     gtk_widget_show (sub_tv);
 
     renderer = gtk_cell_renderer_text_new ();
@@ -3263,12 +3924,10 @@ create_all_char_view_ui (GtkBuilder *builder, GtkWidget *window)
     gtk_box_pack_start (GTK_BOX (hbox), scrolled, FALSE, FALSE, 0);
     gtk_widget_show (scrolled);
 
-    viewport = gtk_viewport_new (NULL, NULL);
-    gtk_container_add (GTK_CONTAINER (scrolled), viewport);
-    gtk_widget_show (viewport);
-
+    /* GtkViewport is not used because the header of GtkTreeviewColumn
+     * is hidden with GtkViewport. */
     tv = gtk_tree_view_new ();
-    gtk_container_add (GTK_CONTAINER (viewport), tv);
+    gtk_container_add (GTK_CONTAINER (scrolled), tv);
     model = all_char_table_model_new ();
     gtk_tree_view_set_model (GTK_TREE_VIEW (tv), model);
     g_object_unref (G_OBJECT (model));
@@ -3339,12 +3998,49 @@ static void
 create_keyboard_layout_ui (GtkBuilder *builder, GtkWidget *window)
 {
     GtkWidget *keyboard_vbox;
+    GtkWidget *button_close;
+    GtkWidget *button_add;
+    GtkWidget *button_remove;
+    GtkWidget *button_option;
+    GtkWidget *button_option_close;
     GtkToggleAction *show_item;
+    InputPadGtkWindow *input_pad = INPUT_PAD_GTK_WINDOW (window);
 
     keyboard_vbox = GTK_WIDGET (gtk_builder_get_object (builder, "TopKeyboardLayoutVBox"));
+    button_close = GTK_WIDGET (gtk_builder_get_object (builder, "ConfigLayoutsCloseButton"));
+    button_add = GTK_WIDGET (gtk_builder_get_object (builder, "ConfigLayoutsAddButton"));
+    button_remove = GTK_WIDGET (gtk_builder_get_object (builder, "ConfigLayoutsRemoveButton"));
+    button_option = GTK_WIDGET (gtk_builder_get_object (builder, "ConfigLayoutsOptionButton"));
+    button_option_close = GTK_WIDGET (gtk_builder_get_object (builder, "ConfigOptionsCloseButton"));
+    input_pad->priv->config_layouts_dialog =
+        GTK_WIDGET (gtk_builder_get_object (builder, "ConfigLayoutsDialog"));
+    input_pad->priv->config_layouts_add_treeview =
+        GTK_WIDGET (gtk_builder_get_object (builder, "ConfigLayoutsAddTreeView"));
+    input_pad->priv->config_layouts_remove_treeview =
+        GTK_WIDGET (gtk_builder_get_object (builder, "ConfigLayoutsRemoveTreeView"));
+    input_pad->priv->config_options_dialog =
+        GTK_WIDGET (gtk_builder_get_object (builder, "ConfigOptionsDialog"));
+    input_pad->priv->config_options_vbox =
+        GTK_WIDGET (gtk_builder_get_object (builder, "ConfigOptionsVBox"));
+
     g_signal_connect_after (G_OBJECT (window), "realize",
                             G_CALLBACK (on_window_realize),
-                            (gpointer)keyboard_vbox);
+                            (gpointer) keyboard_vbox);
+    g_signal_connect (G_OBJECT (button_close), "clicked",
+                      G_CALLBACK (on_button_config_layouts_close_clicked),
+                      (gpointer) input_pad->priv->config_layouts_dialog);
+    g_signal_connect (G_OBJECT (button_add), "clicked",
+                      G_CALLBACK (on_button_config_layouts_add_clicked),
+                      (gpointer) window);
+    g_signal_connect (G_OBJECT (button_remove), "clicked",
+                      G_CALLBACK (on_button_config_layouts_remove_clicked),
+                      (gpointer) window);
+    g_signal_connect (G_OBJECT (button_option), "clicked",
+                      G_CALLBACK (on_button_config_layouts_clicked),
+                      (gpointer) input_pad->priv->config_options_dialog);
+    g_signal_connect (G_OBJECT (button_option_close), "clicked",
+                      G_CALLBACK (on_button_config_options_close_clicked),
+                      (gpointer) input_pad);
 
     show_item = GTK_TOGGLE_ACTION (gtk_builder_get_object (builder, "ShowLayout"));
     gtk_toggle_action_set_active (show_item,
@@ -3418,6 +4114,41 @@ create_ui (unsigned int child)
 
 #ifdef MODULE_XTEST_GDK_BASE
 
+static GModule *
+open_xtest_gmodule (gboolean check)
+{
+    gchar *filename;
+    GModule *module = NULL;
+    const gchar *error = NULL;
+
+    g_return_val_if_fail (MODULE_XTEST_GDK_BASE != NULL, NULL);
+
+    if (!g_module_supported ()) {
+        error = g_module_error ();
+        if (!check) {
+            g_warning ("Module (%s) is not supported on your platform: %s",
+                       MODULE_XTEST_GDK_BASE, error ? error : "");
+        }
+        return NULL;
+    }
+
+    filename = g_module_build_path (MODULE_XTEST_GDK_DIR, MODULE_XTEST_GDK_BASE);
+    g_return_val_if_fail (filename != NULL, NULL);
+
+    module = g_module_open (filename, G_MODULE_BIND_LAZY);
+    if (module == NULL) {
+        error = g_module_error ();
+        if (!check) {
+            g_warning ("Could not open %s: %s", filename, error ? error : "");
+        }
+        g_free (filename);
+        return NULL;
+    }
+    g_free (filename);
+
+    return module;
+}
+
 static void
 input_pad_gtk_window_xtest_gdk_destroy (InputPadGtkWindow *window)
 {
@@ -3441,7 +4172,6 @@ input_pad_gtk_window_xtest_gdk_destroy (InputPadGtkWindow *window)
 static void
 input_pad_gtk_window_xtest_gdk_init (InputPadGtkWindow *window)
 {
-    gchar *filename;
     const gchar *error = NULL;
     const gchar *symbol_name;
     const gchar *module_name;
@@ -3455,27 +4185,9 @@ input_pad_gtk_window_xtest_gdk_init (InputPadGtkWindow *window)
     if (window->priv->module_gdk_xtest) {
         return;
     }
-
-    g_return_if_fail (MODULE_XTEST_GDK_BASE != NULL);
-
-    if (!g_module_supported ()) {
-        error = g_module_error ();
-        g_warning ("Module (%s) is not supported on your platform: %s",
-                   MODULE_XTEST_GDK_BASE, error ? error : "");
+    if ((module = open_xtest_gmodule (FALSE)) == NULL) {
         return;
     }
-
-    filename = g_module_build_path (MODULE_XTEST_GDK_DIR, MODULE_XTEST_GDK_BASE);
-    g_return_if_fail (filename != NULL);
-
-    module = g_module_open (filename, G_MODULE_BIND_LAZY);
-    if (module == NULL) {
-        error = g_module_error ();
-        g_warning ("Could not open %s: %s", filename, error ? error : "");
-        g_free (filename);
-        return;
-    }
-    g_free (filename);
 
     window->priv->module_gdk_xtest = module;
 
@@ -4499,16 +5211,20 @@ void
 input_pad_window_init (int *argc, char ***argv, InputPadWindowType type)
 {
     GOptionContext *context;
+#ifdef MODULE_XTEST_GDK_BASE
+    GModule *module = NULL;
+    gboolean has_xtest_module = FALSE;
+#endif
     InputPadGtkKbduiContext *kbdui_context;
     GError *error = NULL;
     GList *list = NULL;
     const gchar *name;
 
 #ifdef ENABLE_NLS
-    bindtextdomain (GETTEXT_PACKAGE, IBUS_LOCALEDIR);
+    bindtextdomain (GETTEXT_PACKAGE, INPUT_PAD_LOCALEDIR);
     bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 
-    gtk_set_locale ();
+    setlocale (LC_ALL, "");
 #endif
 
     if (type != INPUT_PAD_WINDOW_TYPE_GTK) {
@@ -4519,6 +5235,21 @@ input_pad_window_init (int *argc, char ***argv, InputPadWindowType type)
     context = g_option_context_new (N_("Input Pad"));
     g_option_context_set_translation_domain (context, GETTEXT_PACKAGE);
     g_option_context_add_main_entries (context, entries, GETTEXT_PACKAGE);
+
+#ifdef MODULE_XTEST_GDK_BASE
+    if ((module = open_xtest_gmodule (TRUE)) != NULL) {
+        g_module_close (module);
+        has_xtest_module = TRUE;
+        g_option_context_add_main_entries (context,
+                                           disable_xtest_entry,
+                                           GETTEXT_PACKAGE);
+    } else {
+        g_option_context_add_main_entries (context,
+                                           enable_xtest_entry,
+                                           GETTEXT_PACKAGE);
+    }
+#endif
+
     g_option_context_add_group (context, gtk_get_option_group (TRUE));
 
     kbdui_context = input_pad_gtk_kbdui_context_new ();
@@ -4535,6 +5266,12 @@ input_pad_window_init (int *argc, char ***argv, InputPadWindowType type)
                                        input_pad_get_version ());
         exit (0);
     }
+
+#ifdef MODULE_XTEST_GDK_BASE
+    if (has_xtest_module) {
+        use_module_xtest = !use_module_xtest;
+    }
+#endif
 
     gtk_init (argc, argv);
     input_pad_gtk_window_kbdui_arg_init_post_list (argc, argv, kbdui_context, list);

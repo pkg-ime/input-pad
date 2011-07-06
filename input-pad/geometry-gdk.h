@@ -1,7 +1,7 @@
 /* vim:set et sts=4: */
 /* input-pad - The input pad
- * Copyright (C) 2010 Takao Fujiwara <takao.fujiwara1@gmail.com>
- * Copyright (C) 2010 Red Hat, Inc.
+ * Copyright (C) 2010-2011 Takao Fujiwara <takao.fujiwara1@gmail.com>
+ * Copyright (C) 2010-2011 Red Hat, Inc.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -34,6 +34,12 @@ void                    input_pad_gdk_xkb_signal_emit
                                         (InputPadGtkWindow     *window,
                                          guint                  signal_id);
 char **                 input_pad_gdk_xkb_get_group_layouts
+                                        (InputPadGtkWindow     *window,
+                                         InputPadXKBKeyList    *xkb_key_list);
+char **                 input_pad_gdk_xkb_get_group_variants
+                                        (InputPadGtkWindow     *window,
+                                         InputPadXKBKeyList    *xkb_key_list);
+char **                 input_pad_gdk_xkb_get_group_options
                                         (InputPadGtkWindow     *window,
                                          InputPadXKBKeyList    *xkb_key_list);
 InputPadXKBConfigReg *  input_pad_gdk_xkb_parse_config_registry

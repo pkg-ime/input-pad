@@ -1,7 +1,7 @@
 /* vim:set et sts=4: */
 /* input-pad - The input pad
- * Copyright (C) 2010 Takao Fujiwara <takao.fujiwara1@gmail.com>
- * Copyright (C) 2010 Red Hat, Inc.
+ * Copyright (C) 2010-2011 Takao Fujiwara <takao.fujiwara1@gmail.com>
+ * Copyright (C) 2010-2011 Red Hat, Inc.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -35,10 +35,12 @@ typedef struct _InputPadXKBConfigReg  InputPadXKBConfigReg;
 typedef struct _InputPadXKBConfigRegPrivate  InputPadXKBConfigRegPrivate;
 typedef struct _InputPadXKBLayoutList  InputPadXKBLayoutList;
 typedef struct _InputPadXKBLayoutListPrivate  InputPadXKBLayoutListPrivate;
-typedef struct _InputPadXKBOptionList  InputPadXKBOptionList;
-typedef struct _InputPadXKBOptionListPrivate  InputPadXKBOptionListPrivate;
 typedef struct _InputPadXKBVariantList  InputPadXKBVariantList;
 typedef struct _InputPadXKBVariantListPrivate  InputPadXKBVariantListPrivate;
+typedef struct _InputPadXKBOptionGroupList  InputPadXKBOptionGroupList;
+typedef struct _InputPadXKBOptionGroupListPrivate  InputPadXKBOptionGroupListPrivate;
+typedef struct _InputPadXKBOptionList  InputPadXKBOptionList;
+typedef struct _InputPadXKBOptionListPrivate  InputPadXKBOptionListPrivate;
 
 struct _InputPadXKBKeyRow {
     KeyCode                     keycode;
@@ -56,7 +58,7 @@ struct _InputPadXKBKeyList {
 
 struct _InputPadXKBConfigReg {
     InputPadXKBLayoutList              *layouts;
-    InputPadXKBOptionList              *options;
+    InputPadXKBOptionGroupList         *option_groups;
     InputPadXKBConfigRegPrivate        *priv;
 };
 
@@ -73,6 +75,21 @@ struct _InputPadXKBVariantList {
     char                               *desc;
     InputPadXKBVariantList             *next;
     InputPadXKBVariantListPrivate      *priv;
+};
+
+struct _InputPadXKBOptionGroupList {
+    char                               *option_group;
+    char                               *desc;
+    InputPadXKBOptionList              *options;
+    InputPadXKBOptionGroupList         *next;
+    InputPadXKBOptionGroupListPrivate  *priv;
+};
+
+struct _InputPadXKBOptionList {
+    char                               *option;
+    char                               *desc;
+    InputPadXKBOptionList              *next;
+    InputPadXKBOptionListPrivate       *priv;
 };
 
 #endif
