@@ -19,8 +19,8 @@
 #
 # input-pad - The input pad 
 #
-# Copyright (c) 2010 Takao Fujiwara <takao.fujiwara1@gmail.com>
-# Copyright (c) 2010 Red Hat, Inc.
+# Copyright (c) 2010-2011 Takao Fujiwara <takao.fujiwara1@gmail.com>
+# Copyright (c) 2010-2011 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -117,6 +117,7 @@ DATADIRNAME = @DATADIRNAME@
 DATE_DISPLAY = @DATE_DISPLAY@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
+DLLTOOL = @DLLTOOL@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -169,6 +170,7 @@ LTLIBOBJS = @LTLIBOBJS@
 LT_VERSION_INFO = @LT_VERSION_INFO@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
+MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
 MKINSTALLDIRS = @MKINSTALLDIRS@
 MSGFMT = @MSGFMT@
@@ -221,6 +223,7 @@ abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
+ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
@@ -283,6 +286,7 @@ pad_in_files = \
 	base.xml.in                                             \
 	ja.xml.in                                               \
 	zh.xml.in                                               \
+	runr.xml.in                                             \
 	str.xml.in                                              \
 	w3c.xml.in                                              \
 	cmd.xml.in                                              \
@@ -293,6 +297,7 @@ pad_DATA = \
 	group01-base.xml                                        \
 	group02-ja.xml                                          \
 	group02-zh.xml                                          \
+	group03-runr.xml                                        \
 	group50-str.xml                                         \
 	group60-w3c.xml                                         \
 	group70-cmd.xml                                         \
@@ -575,6 +580,8 @@ group01-base.xml: base.xml
 group02-ja.xml: ja.xml
 	@cp $< $@
 group02-zh.xml: zh.xml
+	@cp $< $@
+group03-runr.xml: runr.xml
 	@cp $< $@
 group50-str.xml: str.xml
 	@cp $< $@
