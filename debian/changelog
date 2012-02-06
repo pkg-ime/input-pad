@@ -1,3 +1,12 @@
+input-pad (1.0.1-2) unstable; urgency=low
+
+  * Fix "Spelling mistake in package description and package description
+    form suggestion" (Closes: #623853)
+  * Fix "package-contains-empty-directory usr/lib/input-pad-
+    1.0/modules/kbdui/" (Closes: #631644)
+
+ -- Asias He <asias.hejun@gmail.com>  Mon, 06 Feb 2012 03:59:39 +0000
+
 input-pad (1.0.1-1) unstable; urgency=low
 
   * New upstream release

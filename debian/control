@@ -31,8 +31,9 @@ Depends:
     ${shlibs:Depends},
     libinput-pad1 (= ${binary:Version})
 Description: On-screen Input Pad to Send Characters with Mouse
- The input pad is a tool to send a character on button to text applications.
- It provides the GTK+ based GUI and can send characteres on the GTK+ buttons.
+ The input pad is a tool to send a character to text applications when the
+ corresponging button is pressed. It provides the GTK+ based GUI and can send
+ characters when the GTK+ buttons are pressed.
  .
  This package contains a standalone application.
 
@@ -46,8 +47,9 @@ Replaces: libinput-pad0
 Conflicts: libinput-pad0
 Enhances: libinput-pad-xtest
 Description: On-screen Input Pad to Send Characters with Mouse - libs
- The input pad is a tool to send a character on button to text applications.
- It provides the GTK+ based GUI and can send characteres on the GTK+ buttons.
+ The input pad is a tool to send a character to text applications when the
+ corresponging button is pressed. It provides the GTK+ based GUI and can send
+ characters when the GTK+ buttons are pressed.
  .
  This package contains libraries for other applications.
 
@@ -61,8 +63,9 @@ Depends:
     libgtk2.0-dev
 Suggests: libinput-pad-xtest
 Description: On-screen Input Pad to Send Characters with Mouse - dev
- The input pad is a tool to send a character on button to text applications.
- It provides the GTK+ based GUI and can send characteres on the GTK+ buttons.
+ The input pad is a tool to send a character to text applications when the
+ corresponging button is pressed. It provides the GTK+ based GUI and can send
+ characters when the GTK+ buttons are pressed.
  .
  This package contains the header files.
 
@@ -78,8 +81,9 @@ Provides: ${python:Provides}
 XS-Python-Version: >= 2.6
 XB-Python-Version: ${python:Versions}
 Description: On-screen Input Pad to Send Characters with Mouse - python
- The input pad is a tool to send a character on button to text applications.
- It provides the GTK+ based GUI and can send characteres on the GTK+ buttons.
+ The input pad is a tool to send a character to text applications when the
+ corresponging button is pressed. It provides the GTK+ based GUI and can send
+ characters when the GTK+ buttons are pressed.
  .
  This package contains the Python binding of input-pad.
 
@@ -91,8 +95,8 @@ Depends:
     ${shlibs:Depends},
     libinput-pad1 (= ${binary:Version}),
 Description: On-screen Input Pad to Send Characters with Mouse - xtest
- The input pad is a tool to send a character on button to text applications.
- It provides the GTK+ based GUI and can send characteres on the GTK+ buttons.
+ The input pad is a tool to send a character to text applications when the
+ corresponging button is pressed. It provides the GTK+ based GUI and can send
+ characters when the GTK+ buttons are pressed.
  .
  This package contains the XTEST module for input-pad.
-
